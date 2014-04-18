@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/bullet.css">
+  <title>Bullet</title>
+</head>
+<body>
+
+<header></header>
+
+<main id="content">
+  <h1>Bullet</h1>
+
+  <section>
+    <ng-view></ng-view>
+  </section>
+</main>
+
+<footer></footer>
+
+<script src="packages/shadow_dom/shadow_dom.min.js"></script>
+<script type="application/dart" src="main.dart"></script>
+<script src="packages/browser/dart.js"></script>
+
+</body>
+</html>

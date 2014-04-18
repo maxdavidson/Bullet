@@ -1,0 +1,12 @@
+name: bullet
+version: 0.0.1
+dependencies:
+  browser: any
+  unittest: any
+  stream: any
+  angular: '>= 0.10.0'
+
+transformers:
+- angular:
+    html_files:
+    - lib/client/views/test.html
