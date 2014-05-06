@@ -1,0 +1,61 @@
+:host {
+  display: block;
+}
+
+/*
+.animated-ad.ng-enter {
+  transition: 500ms;
+  opacity: 0;
+}
+
+.animated-ad.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
+
+.animated-ad.ng-leave {
+  transition: 500ms;
+  opacity: 1;
+}
+
+.animated-ad.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+*/
+
+.ads {
+  -webkit-perspective: 500px;
+}
+
+ad.ng-enter,
+ad.ng-leave {
+  -webkit-transition: 400ms ease all;
+  -moz-transition: 400ms ease all;
+  -ms-transition: 400ms ease all;
+  -o-transition: 400ms ease all;
+  transition: 400ms ease all;
+  position: relative;
+  display: block;
+}
+
+ad.ng-leave.ng-leave-active,
+ad.ng-enter {
+  -webkit-transform: rotateX(45deg);
+  -moz-transform: rotateX(45deg);
+  -ms-transform: rotateX(45deg);
+  -o-transform: rotateX(45deg);
+  transform: rotateX(45deg);
+  opacity: 0;
+  height: 0;
+}
+
+ad.ng-enter.ng-enter-active,
+ad.ng-leave {
+  -webkit-transform: rotateX(0deg);
+  -moz-transform: rotateX(0deg);
+  -ms-transform: rotateX(0deg);
+  -o-transform: rotateX(0deg);
+  transform: rotateX(0deg);
+  opacity: 1;
+  height: 115px;
+}

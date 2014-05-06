@@ -1,0 +1,5 @@
+<button ng-click="ctrl.reload()">Reload</button>
+<div class="ads">
+  <ad ng-repeat="ad in ctrl.ads | filter: {title: ctrl.query} | orderBy: 'date' : true"
+      model="ad"></ad>
+</div>

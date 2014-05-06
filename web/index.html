@@ -2,23 +2,15 @@
 <html ng-app>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <link rel="stylesheet" href="css/bullet.css">
   <title>Bullet</title>
 </head>
 <body>
 
-<header></header>
-
-<main id="content">
-  <h1>Bullet</h1>
-
-  <section>
-    <ng-view></ng-view>
-  </section>
-</main>
-
-<footer></footer>
+<navbar></navbar>
+<ng-view></ng-view>
 
 <script src="packages/shadow_dom/shadow_dom.min.js"></script>
 <script type="application/dart" src="main.dart"></script>

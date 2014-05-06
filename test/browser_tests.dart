@@ -4,14 +4,13 @@ import 'dart:math';
 import 'package:unittest/unittest.dart';
 import 'package:unittest/html_enhanced_config.dart';
 
-import 'package:bullet/common/connector/websocket/client.dart';
-
+import 'package:bullet/common/connector/impl/websocket_connector/client.dart';
 
 void main() {
   useHtmlEnhancedConfiguration();
 
   group('WebsocketConnector', () {
-    WebSocketConnector connector = new WebSocketConnector(pathname: 'api', port: 8888);
+    var connector = new WebSocketConnectorClient(pathname: 'api', port: 8888);
 
     test('Ping response', () => expect(connector.ping(), completes));
 

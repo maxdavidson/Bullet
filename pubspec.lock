@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.13.5"
+    version: "0.13.6"
   angular:
     description: angular
     source: hosted
@@ -16,11 +16,15 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.12.0"
+    version: "0.13.0"
   browser:
     description: browser
     source: hosted
     version: "0.10.0+2"
+  bson:
+    description: bson
+    source: hosted
+    version: "0.1.18"
   code_transformers:
     description: code_transformers
     source: hosted
@@ -28,15 +32,23 @@ packages:
   collection:
     description: collection
     source: hosted
-    version: "0.9.1"
+    version: "0.9.2"
+  crypto:
+    description: crypto
+    source: hosted
+    version: "0.9.0"
   di:
     description: di
     source: hosted
-    version: "0.0.37"
+    version: "0.0.40"
   html5lib:
     description: html5lib
     source: hosted
     version: "0.9.2"
+  http:
+    description: http
+    source: hosted
+    version: "0.10.0"
   intl:
     description: intl
     source: hosted
@@ -57,6 +69,22 @@ packages:
     description: mock
     source: hosted
     version: "0.10.0+1"
+  mongo_dart:
+    description: mongo_dart
+    source: hosted
+    version: "0.1.38"
+  mongo_dart_query:
+    description: mongo_dart_query
+    source: hosted
+    version: "0.1.12"
+  more:
+    description: more
+    source: hosted
+    version: "1.2.0"
+  oauth2:
+    description: oauth2
+    source: hosted
+    version: "0.9.2"
   path:
     description: path
     source: hosted
@@ -72,7 +100,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.18"
+    version: "0.4.19"
   shadow_dom:
     description: shadow_dom
     source: hosted

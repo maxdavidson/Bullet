@@ -1,0 +1,57 @@
+/* Official syntax */
+:host {
+  display: block;
+}
+
+/* Old syntax, supported by polyfill */
+@
+host { * {
+  display: block;
+}
+
+}
+.ad {
+  overflow: auto;
+  margin: 0 auto 1em auto;
+  max-width: 500px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1);
+}
+
+.ad .image {
+  position: relative;
+  flex: 1;
+  max-width: 100px;
+  /*position: absolute;
+  left: 0;
+  height: 100%;
+  width: 100%;*/
+  color: rgba(0, 0, 0, 0.8);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.ad .content {
+  flex-grow: 4;
+  margin: 5px;
+}
+
+.ad .content .title {
+  /*position: absolute;
+  left: 5px; bottom: 5px;*/
+  font-size: 1.2em;
+}
+
+.ad .content .date {
+  /*position: absolute;
+  left: 5px; top: 5px;*/
+  font-size: 0.8em;
+}
+
+.ad .content .price {
+  float: right;
+  /*position: absolute;
+  top: 5px; right: 5px;*/
+  font-family: 'PT Sans', sans-serif;
+  font-size: 2em;
+}

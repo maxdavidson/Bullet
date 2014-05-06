@@ -4,7 +4,6 @@ import 'dart:convert' show JSON;
 import 'dart:math';
 import 'dart:async';
 
-
 String _randomString([int length = 10]) {
   var buffer = new StringBuffer();
   var random = new Random();
@@ -14,7 +13,7 @@ String _randomString([int length = 10]) {
   return buffer.toString();
 }
 
-class WebSocketConnectorEvent {
+class WscEvent {
 
   static const EVENT   = 0;
   static const CALL    = 1;
@@ -25,22 +24,22 @@ class WebSocketConnectorEvent {
   static const END     = 6;
   static const PING    = 7;
 
-  static final StreamTransformer<String, WebSocketConnectorEvent> decoder = new StreamTransformer.fromHandlers(
-    handleData: (String input, EventSink<WebSocketConnectorEvent> sink) {
+  static final StreamTransformer<String, WscEvent> decoder = new StreamTransformer.fromHandlers(
+    handleData: (String input, EventSink<WscEvent> sink) {
       print('Recieved: $input');
-      sink.add(new WebSocketConnectorEvent.fromJson(input));
+      sink.add(new WscEvent.fromJson(input));
     });
 
-  static final StreamTransformer<WebSocketConnectorEvent, String> encoder = new StreamTransformer.fromHandlers(
-    handleData: (WebSocketConnectorEvent input, EventSink<String> sink) {
+  static final StreamTransformer<WscEvent, String> encoder = new StreamTransformer.fromHandlers(
+    handleData: (WscEvent input, EventSink<String> sink) {
       print('Sent: ${input.toJson()}');
       sink.add(input.toJson());
     });
 
-  static StreamTransformer<WebSocketConnectorEvent, WebSocketConnectorEvent> handleEvents(
+  static StreamTransformer<WscEvent, WscEvent> handleEvents(
       {onEvent, onCall, onCancel, onError, onPause, onResume, onEnd, onPing})
     => new StreamTransformer.fromHandlers(
-      handleData: (WebSocketConnectorEvent event, EventSink<WebSocketConnectorEvent> sink) {
+      handleData: (WscEvent event, EventSink<WscEvent> sink) {
         final Map<int, Function> handlers = {
           EVENT: onEvent,
           CALL: onCall,
@@ -67,10 +66,10 @@ class WebSocketConnectorEvent {
 
   String get id => _id;
 
-  WebSocketConnectorEvent(int this.type, {String this.event, this.payload, String id, bool generateId: true})
+  WscEvent(int this.type, {String this.event, this.payload, String id, bool generateId: true})
     : _id = (id == null && generateId) ? _randomString() : id;
 
-  WebSocketConnectorEvent.fromJson(String json) {
+  WscEvent.fromJson(String json) {
     final obj = JSON.decode(json);
     this
       ..type = obj[0]

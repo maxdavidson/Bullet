@@ -1,24 +1,26 @@
-library bullet.connector.websocket.client;
+library bullet.connector.websocket_client;
 
 import 'dart:html';
 import 'dart:async';
 
-import '../connector.dart';
-import 'event.dart';
+import '../../connector.dart';
+import 'src/event.dart';
+
+export '../../connector.dart';
 
 /**
- * Provides a way for a client to run remote procedures
+ * Provides a way for a client to run remote procedures over a WebSocket connection
  */
-class WebSocketConnector implements Connector {
+class WebSocketConnectorClient implements ConnectorClient {
 
   WebSocket _ws;
   Future _whenSocketIsOpen;
-  Stream<WebSocketConnectorEvent> _inputStream;
-  StreamController<WebSocketConnectorEvent> _outputStream;
+  Stream<WscEvent> _inputStream;
+  StreamController<WscEvent> _outputStream;
 
-  Stream<WebSocketConnectorEvent> get inputStream => _inputStream;
+  Stream<WscEvent> get inputStream => _inputStream;
   
-  WebSocketConnector({String host: 'localhost', String pathname: 'ws', int port: 80}) {
+  WebSocketConnectorClient({String host: 'localhost', String pathname: 'ws', int port: 80}) {
     
     _ws = new WebSocket('ws://$host:$port/$pathname');
     
@@ -26,16 +28,16 @@ class WebSocketConnector implements Connector {
       ? new Future.value()
       :_ws.onOpen.first.timeout(const Duration(seconds: 10));
 
-    // _ws.onMessage.listen((e) => window.console.log('Recieved: ${e.data}'));
+    // _ws.onMessage.listen((e) => window.console.log('Received: ${e.data}'));
     
     _inputStream = _ws.onMessage
       .map((MessageEvent event) => event.data)
-      .transform(WebSocketConnectorEvent.decoder)
+      .transform(WscEvent.decoder)
       .asBroadcastStream();
     
-    _outputStream = new StreamController<WebSocketConnectorEvent>()
+    _outputStream = new StreamController<WscEvent>()
       ..stream
-        .transform(WebSocketConnectorEvent.encoder)
+        .transform(WscEvent.encoder)
         .listen((String json) => _whenSocketIsOpen.then((_) => _ws.send(json)));
       
     // Quick fix, not good enough
@@ -48,18 +50,18 @@ class WebSocketConnector implements Connector {
    */
   Stream<dynamic> remoteStream(String identifier, [data]) {
     
-    var request = new WebSocketConnectorEvent(WebSocketConnectorEvent.CALL, event: identifier, payload: data);
+    var request = new WscEvent(WscEvent.CALL, event: identifier, payload: data);
     
     // Handle subscription events
     var controller = new StreamController(
-      onCancel: () => _outputStream.add(new WebSocketConnectorEvent(WebSocketConnectorEvent.CANCEL, id: request.id)),
-      onPause:  () => _outputStream.add(new WebSocketConnectorEvent(WebSocketConnectorEvent.PAUSE, id: request.id)),
-      onResume: () => _outputStream.add(new WebSocketConnectorEvent(WebSocketConnectorEvent.RESUME, id: request.id))
+      onCancel: () => _outputStream.add(new WscEvent(WscEvent.CANCEL, id: request.id)),
+      onPause:  () => _outputStream.add(new WscEvent(WscEvent.PAUSE, id: request.id)),
+      onResume: () => _outputStream.add(new WscEvent(WscEvent.RESUME, id: request.id))
     );
 
     _inputStream
       .where((response) => response.id == request.id)
-      .transform(WebSocketConnectorEvent.handleEvents(
+      .transform(WscEvent.handleEvents(
         onError: (event, _) => controller.addError(event),
         onEnd:   (event, _) => controller.close(),
         onEvent: (event, _) => controller.add(event.payload)
@@ -82,10 +84,10 @@ class WebSocketConnector implements Connector {
    */
   Future<Duration> ping({Duration timeout: const Duration(seconds: 10)}) {
     var stopwatch = new Stopwatch()..start();
-    _outputStream.add(new WebSocketConnectorEvent(WebSocketConnectorEvent.PING, generateId: false));
+    _outputStream.add(new WscEvent(WscEvent.PING, generateId: false));
     return _inputStream
       .asBroadcastStream()
-      .firstWhere((event) => event.type == WebSocketConnectorEvent.PING)
+      .firstWhere((event) => event.type == WscEvent.PING)
       .timeout(timeout)
       .then((_) { stopwatch.stop(); return stopwatch.elapsed; });
   }

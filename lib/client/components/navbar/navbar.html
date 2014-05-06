@@ -1,0 +1,30 @@
+<div class="fixed contain-to-grid">
+  <nav class="top-bar" ng-class="{expanded: ctrl.isExpanded}">
+    <ul class="title-area">
+      <li class="name">
+        <h1><a href="#">bullet</a></h1>
+      </li>
+      <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+      <li class="toggle-topbar menu-icon"><a href="#" ng-click="ctrl.toggleExpander()"><span></span></a></li>
+    </ul>
+
+    <section class="top-bar-section">
+      <!-- Left Nav Section -->
+      <ul class="left">
+        <li><a href="#">Left Nav Button</a></li>
+      </ul>
+
+      <!-- Right Nav Section -->
+      <ul class="right">
+        <li><a href="#">Login</a></li>
+        <li class="active"><a href="#">Right Button Active</a></li>
+        <li class="has-dropdown">
+          <a href="#">Right Button Dropdown</a>
+          <ul class="dropdown">
+            <li><a href="#">First link in dropdown</a></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+  </nav>
+</div>

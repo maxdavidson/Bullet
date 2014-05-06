@@ -1,0 +1,17 @@
+@import url(http://fonts.googleapis.com/css?family=Dosis:200,300,400|PT+Sans:400,400italic|Lobster);
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: 'PT Sans', sans-serif;
+
+    height: 100%;
+    margin: 68px 0;
+
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #0ef;
+    /*background: linear-gradient(86deg, #0ef, #0bb);*/
+}

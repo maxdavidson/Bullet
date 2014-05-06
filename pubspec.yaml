@@ -1,12 +1,18 @@
 name: bullet
-version: 0.0.1
+version: 0.1.0
 dependencies:
   browser: any
+  angular: '>= 0.10.0'
+    #path: ../angular.dart/
   unittest: any
   stream: any
-  angular: '>= 0.10.0'
+  mongo_dart: any
+  oauth2: any
 
 transformers:
 - angular:
     html_files:
-    - lib/client/views/test.html
+    - lib/client/components/ad/ad.html
+    - lib/client/components/adset/adset.html
+    - lib/client/components/navbar/navbar.html
+    - lib/client/views/home/home.html
