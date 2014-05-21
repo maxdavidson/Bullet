@@ -3,36 +3,43 @@ part of bullet.client.components;
 @Component(
   selector: 'adset',
   publishAs: 'ctrl',
-  templateUrl: 'packages/bullet/client/components/adset/adset.html',
-  cssUrl: 'packages/bullet/client/components/adset/adset.css',
-  map: const { 'query': '=>query' })
-class AdsetComponent {
+  templateUrl: '/packages/bullet/client/components/adset/adset.html',
+  cssUrl: '/packages/bullet/client/components/adset/adset.css',
+  map: const { 'query': '<=>query' })
+class AdsetComponent implements DetachAware {
 
-  List<Ad> ads;
+  final AdMapper mapper;
+  final queries = new StreamController<String>();
+  final set = new ReactiveProperty<Set<Ad>>(new Set<Ad>());
+  final list = new ReactiveProperty<List<Ad>>(new List<Ad>());
+
+  List<Ad> get ads => list.value;
+
   String query = '';
-  AdCollection collection;
+  int limit = 5;
 
-  AdsetComponent(this.collection) {
-    reload();
+  AdsetComponent(this.mapper, Scope scope, RouteProvider route) {
+    set.map((Set set) => set.toList()).pipe(list);
+
+    scope.watch("ctrl.query", (curr, prev) => queries.add(curr));
+
+    queries.stream
+      .transform(debounce(const Duration(milliseconds: 500)))
+      .forEach(runQuery);
   }
 
-  reload() {
-    ads = [];
-    collection.find().listen(ads.add);
-    /*
-    var adsToCome = [
-        new Ad()..update({ 'title': 'En gammal byrå', 'price': 50 }),
-        new Ad()..update({ 'title': 'Två stora bananer säljes!', 'price': 500 }),
-        new Ad()..update({ 'title': 'Pajaskokos!', 'price': 13 }),
-        new Ad()..update({ 'title': 'Ät mina kortbyxor!', 'price': 399 }),
-        new Ad()..update({ 'title': 'Äppelkaka!!', 'price': 25 }),
-    ];
-    adsToCome.forEach((ad) => ad.update({ 'date':  new DateTime.now() }));
+  void increaseLimit() { limit++; }
 
-    new Stream.fromIterable(adsToCome)
-      .asyncMap((Ad ad) => new Future.delayed(const Duration(milliseconds: 25), () => ad))
-      .listen(ads.add);
-  */
+  void runQuery([String input]) {
+    limit = 5;
+    mapper.find(query: {
+        r'$query': { 'title': { r'$regex': input, r'$options': 'i' } } ,
+        'orderby': { '_id' : -1 }
+      }, live: true)
+      .transform(scan(set.value, (Set<Ad> set, Ad ad) => set..add(ad)))
+      .pipe(set);
   }
 
+  @override
+  detach() => set.cancel();
 }

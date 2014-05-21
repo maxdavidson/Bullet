@@ -11,33 +11,52 @@ export '../../connector.dart';
 /**
  * Defines a class that handles remote procedures
  */
-class WebSocketConnectorServer implements ConnectorServer, StreamConsumer<WebSocket> {
+class WebSocketConnectorServer implements ConnectorServer<WebSocket> {
 
-  Map<String, StreamSubscription> _subscriptions = new Map<String, StreamSubscription>();
-  Map<String, Function> _handlers = new Map<String, Function>();
+  final _subscriptions = new Map<String, StreamSubscription>();
+  final _handlers = new Map<String, Function>();
 
-  void setHandler(String identifier, handler(dynamic)) { _handlers[identifier] = handler; }
-  void removeHandler(String identifier) { _handlers.remove(identifier); }
+  @override
+  void bind(String identifier, handler(dynamic)) { _handlers[identifier] = handler; }
 
-  Future addStream(Stream<WebSocket> stream) => stream.forEach(handler);
-  Future close() => new Future.value(); // todo
+  @override
+  void unbind(String identifier) { _handlers.remove(identifier); }
 
-  handler(WebSocket ws) => ws
+  @override
+  void addError(errorEvent, [StackTrace stackTrace]) => null;
+
+  @override
+  void close() => null;
+
+  Future addStream(Stream<WebSocket> stream) => stream.forEach(add);
+  Future cancel() => Future.wait(_subscriptions.values.map((sub) => sub.cancel()));
+
+  @override
+  add(WebSocket ws) => ws
     .transform(WscEvent.decoder)
     .transform(WscEvent.handleEvents(
       onPing: (event, sink) => sink.add(event),
-      
-      onPause: (event, _) => _subscriptions[event.id].pause(),
-      onResume: (event, _) => _subscriptions[event.id].resume(),
+
+      onPause: (event, _) {
+        _subscriptions[event.id].pause();
+        print('Paused: ${event.id}');
+      },
+
+      onResume: (event, _) {
+        _subscriptions[event.id].resume();
+        print('Resumed: ${event.id}');
+      },
+
       onCancel: (event, _) {
         _subscriptions[event.id].cancel();
         _subscriptions.remove(event.id);
+        print('Canceled: ${event.id}');
       },
 
       onCall: (event, sink) {
         try { 
           final result = _handlers[event.event](event.payload);
-          
+
           Stream convertToStream(input) {;
             if (input is Stream) return input;
             else if (input is Future) { // Recursively deal with futures. For example, Future<Stream> is converted to Stream
@@ -50,14 +69,16 @@ class WebSocketConnectorServer implements ConnectorServer, StreamConsumer<WebSoc
           
           _subscriptions[event.id] = convertToStream(result)
             .map((result) => new WscEvent(WscEvent.EVENT, payload: result, id: event.id, event: event.event))
-            .listen((event) => sink.add(event),
+            .listen((event) => (ws.readyState != WebSocket.OPEN) ? _subscriptions[event.id].cancel() : sink.add(event),
               onDone:  () => sink.add(new WscEvent(WscEvent.END, id: event.id, event: event.event)),
-              onError: (_) => sink.add(new WscEvent(WscEvent.ERROR, id: event.id, event: event.event))
+              onError: (Error e) => sink.add(new WscEvent(WscEvent.ERROR, id: event.id, event: event.event, payload: e.stackTrace.toString()))
             );
         } catch (_) { 
           sink.add(new WscEvent(WscEvent.ERROR, id: event.id, event: event.event));
+          print('Error: ${event.id}');
+        } finally {
+          print('Started: ${event.id}');
         }
-
       }
     ))
     .transform(WscEvent.encoder)

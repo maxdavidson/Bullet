@@ -1,33 +1,43 @@
 library bullet.client;
 
 import 'package:angular/angular.dart';
-import 'package:angular/animate/module.dart';
 import 'router.dart';
+
+// Plugins
+import 'package:angular/animate/module.dart';
+import 'package:ng_infinite_scroll/ng_infinite_scroll.dart';
 
 // Client modules
 import 'components/components.dart';
-import 'views/views.dart';
 import 'formatters/formatters.dart';
 import 'models/models.dart';
+import 'views/views.dart';
 
 // Shared modules
-import '../common/authentication/authentication.dart';
-import '../common/connector/impl/websocket_connector/client.dart';
+import 'package:bullet/common/authenticator/client.dart';
+import 'package:bullet/common/database/database.dart';
+import 'package:bullet/common/connector/connector.dart';
+
+import 'package:bullet/common/database/impl/mock.dart';
+import 'package:bullet/common/database/impl/connector.dart';
+import 'package:bullet/common/connector/impl/websocket/client.dart';
 
 class AppModule extends Module {
   AppModule() {
     bind(RouteInitializerFn, toValue: routeInitializer);
 
     install(new AnimationModule());
+    //install(new InfiniteScrollModule());
+
     install(new ComponentModule());
     install(new ViewModule());
     install(new FormatterModule());
-    install(new ModelModule());
+    install(new EntityMapperModule());
 
-    //install(new AuthenticationModule());
-    bind(AuthenticationService, toImplementation: MockAuthenticationService);
+    bind(AuthenticatorClient, toValue: null);
+    bind(ConnectorClient, toValue: new WebSocketConnectorClient(pathname: 'api'));
+    bind(Database, toImplementation: ConnectorProxy);
 
-    //install(new DatabaseModule());
-    bind(DatabaseService, toImplementation: MockDatabaseService);
+    //bind(NgRoutingUsePushState, toValue: new NgRoutingUsePushState.value(false));
   }
 }

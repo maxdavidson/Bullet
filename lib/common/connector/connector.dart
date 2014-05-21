@@ -3,17 +3,31 @@ library bullet.connector;
 import 'dart:async';
 
 /**
- * Defines a way to run remote procedures defined on a server
+ * Defines a way to subscribe to event streams defined somewhere else.
  */
 abstract class ConnectorClient {
-  Future<dynamic> remoteCall(String identifier, [data]);
-  Stream<dynamic> remoteStream(String identifier, [data]);
+  /**
+   * Subscribes to the behavior defined by [identifier].
+   * Can be used for remote procedure call, since streams may end
+   */
+  Stream subscribe(String identifier, [data]);
 }
 
 /**
- * Defines a class that handles remote procedures
+ * Defines a class that handles reactions to specific identifiers.
+ * Reaction functions must have only  one parameter,
+ * since this is a limitation of Dart. (No varargs)
  */
-abstract class ConnectorServer {
-  void setHandler(String identifier, dynamic handler(dynamic));
-  void removeHandler(String identifier);
+abstract class ConnectorServer<T extends Stream> extends EventSink<T> {
+  /**
+   * Bind a behavior for a specific identifier.
+   * The handler may return void or a stream, a future,
+   * or a value of a serializable object.
+   */
+  void bind(String identifier, dynamic handler(dynamic));
+
+  /**
+   * Unbind the behavior for a specific identifier.
+   */
+  void unbind(String identifier);
 }

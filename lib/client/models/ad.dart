@@ -1,13 +1,11 @@
 part of bullet.client.models;
 
-class Ad extends Model {
-  get title => state['title'];
-  get price => state['price'];
-  get date => state['date'];
+class Ad extends Entity {
+  String get title => value['title'];
+  num get price => value['price'];
 }
 
 @Injectable()
-class AdCollection extends Collection<Ad> {
-  AdCollection(DatabaseService db)
-    : super('ads', db, () => new Ad());
+class AdMapper extends EntityMapper<Ad> {
+  AdMapper(Database db) : super('ads', db, builder: () => new Ad());
 }

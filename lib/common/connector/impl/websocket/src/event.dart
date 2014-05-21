@@ -3,15 +3,10 @@ library bullet.connector.websocket.event;
 import 'dart:convert' show JSON;
 import 'dart:math';
 import 'dart:async';
+import 'dart:convert';
+import 'package:jwt/base64url.dart';
 
-String _randomString([int length = 10]) {
-  var buffer = new StringBuffer();
-  var random = new Random();
-  int a = 'a'.codeUnitAt(0);
-  for (int i = 0; i < length; i++)
-    buffer.writeCharCode(random.nextInt(26) + a);
-  return buffer.toString();
-}
+String _randomString([int length = 10]) => BASE64URL.encode(new Iterable.generate(length, (n) => new Random().nextInt(255)).toList());
 
 class WscEvent {
 
@@ -26,7 +21,7 @@ class WscEvent {
 
   static final StreamTransformer<String, WscEvent> decoder = new StreamTransformer.fromHandlers(
     handleData: (String input, EventSink<WscEvent> sink) {
-      print('Recieved: $input');
+      print('Received: $input');
       sink.add(new WscEvent.fromJson(input));
     });
 
@@ -55,6 +50,7 @@ class WscEvent {
           var handler = handlers[event.type];
           if (handler != null) handler(event, sink);
         } catch (e) {
+          print(e);
           //sink.add(new WebSocketConnectorEvent(WebSocketConnectorEvent.ERROR, id: event.id, event: event.event));
         }
       });
@@ -66,11 +62,16 @@ class WscEvent {
 
   String get id => _id;
 
+  final CODEC = JSON;//.fuse(UTF8).fuse(BASE64);
+
   WscEvent(int this.type, {String this.event, this.payload, String id, bool generateId: true})
     : _id = (id == null && generateId) ? _randomString() : id;
 
+  /**
+   * Defines how event objects are deserialized
+   */
   WscEvent.fromJson(String json) {
-    final obj = JSON.decode(json);
+    final obj = CODEC.decode(json);
     this
       ..type = obj[0]
       ..event = obj[1]
@@ -78,6 +79,9 @@ class WscEvent {
       .._id = obj[2];
   }
 
-  String toJson() => JSON.encode([type, event, id, payload]);
+  /**
+   * Defines how event objects are serialized.
+   */
+  String toJson() => CODEC.encode([type, event, id, payload]);
 
 }

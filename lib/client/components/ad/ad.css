@@ -4,18 +4,15 @@
 }
 
 /* Old syntax, supported by polyfill */
-@
-host { * {
-  display: block;
-}
-
+@host {
+  * { display: block; }
 }
 .ad {
   overflow: auto;
-  margin: 0 auto 1em auto;
-  max-width: 500px;
+  width: 100%;
+  margin-bottom: 15px;
   height: 100px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1);
 }
 

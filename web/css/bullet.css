@@ -1,17 +1,24 @@
-@import url(http://fonts.googleapis.com/css?family=Dosis:200,300,400|PT+Sans:400,400italic|Lobster);
+/*@import url(http://fonts.googleapis.com/css?family=Dosis:200,300,400|Open+Sans:400,400italic|Lobster);*/
 
 html {
     height: 100%;
 }
 
 body {
-    font-family: 'PT Sans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
 
     height: 100%;
-    margin: 68px 0;
+    /*margin: 68px 0;*/
+    margin: 0;
 
     background-repeat: no-repeat;
     background-attachment: fixed;
-    background-color: #0ef;
+    background-color: #e66;
     /*background: linear-gradient(86deg, #0ef, #0bb);*/
+}
+
+ng-view {
+  margin: 0 auto 1em auto;
+  max-width: 500px;
+  display: block;
 }

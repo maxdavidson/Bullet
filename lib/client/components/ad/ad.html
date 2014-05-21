@@ -1,8 +1,9 @@
 <article class="ad">
-  <section class="image"></section>
+  <section class="image">
+  </section>
   <section class="content">
-    <div class="price">{{ ctrl.price | currency : ' kr' : false }}</div>
-    <div class="date">{{ ctrl.date | niceDate }}</div>
-    <div class="title">{{ ctrl.title }}</div>
+    <div class="price">{{ ctrl.model.price | currency : ' kr' : false }}</div>
+    <div class="date">{{ ctrl.model.created | date: niceDate }}</div>
+    <div class="title">{{ ctrl.model.title }}</div>
   </section>
 </article>
