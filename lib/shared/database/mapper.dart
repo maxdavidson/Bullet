@@ -1,14 +1,11 @@
-library bullet.common.collection;
+library bullet.database.mapper;
 
-import 'dart:math';
-import 'package:bullet/client/stream_helpers.dart';
-import 'database.dart';
-export 'database.dart';
+import 'dart:async';
 
-/**
- * A function that returns an instance of a subclass of [Entity].
- */
-typedef T EntityBuilder<T extends Entity>();
+import 'package:bullet/shared/stream_helpers.dart';
+import 'package:bullet/shared/database/database.dart';
+export 'package:bullet/shared/database/database.dart';
+
 
 /**
  * Represents a single object in a database.
@@ -25,8 +22,8 @@ class Entity extends ReactiveProperty<Map> {
   DateTime get updated => value['updated'];
 
   Entity() : super({}) {
-    this.map((me) => 'Updated ${this.id}').listen(print);
-    this.map((me) => 'Created ${this.id}').first.then(print);
+    //this.map((me) => 'Updated ${this.id}').listen(print);
+    //this.map((me) => 'Created ${this.id}').first.then(print);
   }
 
   /**
@@ -42,8 +39,9 @@ class Entity extends ReactiveProperty<Map> {
   Future addStream(Stream<Map> stream) => super.addStream(
       stream.transform(scan(value, (Map state, Map update) {
         update.forEach((String key, val) => state[key] = val);
-        if (!state.containsKey('created'))
-          state['created'] = new DateTime.now();
+        state['created'] = state.containsKey('created') 
+            ? DateTime.parse(state['created']) 
+            : new DateTime.now();
         state['updated'] = new DateTime.now();
         return state;
       })));
@@ -54,19 +52,26 @@ class Entity extends ReactiveProperty<Map> {
   }
 }
 
+
+/**
+ * A function that returns an instance of a subclass of [Entity].
+ */
+typedef T EntityBuilder<T extends Entity>();
+
+
 /**
  * Maps a database collection and keeps track of a set of auto-updating entities
  */
-abstract class EntityMapper<T extends Entity> {
+class EntityMapper<T extends Entity> {
 
   final Database db;
-  final EntityBuilder builder;
+  final EntityBuilder<T> builder;
 
   final String collectionName;
   final String idField;
 
   static final cache = new Map<dynamic, Entity>();
-
+  
   /**
    * [collectionName] is the name of database collection or table.
    * [idField] is the field that uniquely identifies an object or row, by default '_id'.
@@ -88,7 +93,7 @@ abstract class EntityMapper<T extends Entity> {
         ..id = id;
       return entity.start();
     }
-    return cache[id] as T;
+    return cache[id];
   }
 
   /**
@@ -107,7 +112,12 @@ abstract class EntityMapper<T extends Entity> {
     db.find(collectionName, query: query, projection: projection, live: live);
 
   /**
-   * Creates a new [Model] and saves it.
+   * Get a [T] instance with the specific ID if it exists.
+   */
+  Future<T> get(dynamic id) => find(query: { idField: id }).first;
+
+  /**
+   * Creates a new [T] and saves it.
    * If successful, the model gets an id. Otherwise, it throws.
    */
   Future<T> create([Map model = const {}]) =>

@@ -1,5 +1,5 @@
-<!-- Length: {{ ctrl.ads.length }}, Limit: {{ ctrl.limit }}, Queries: {{ ctrl.queries }} -->
-<div class="ads" infinite-scroll="ctrl.increaseLimit()" ng-if="ctrl.ads.length > 0">
-<ad ng-repeat="ad in ctrl.ads | filter: {title: ctrl.query} | orderBy: '-created' | limitTo: ctrl.limit"
+Results: {{ ctrl.ads.length }}, Limit: {{ ctrl.limit }}, Live: {{ ctrl.ads.length }}
+<div class="ads" infinite-scroll="ctrl.increaseLimit" ng-if="ctrl.ads.length > 0">
+<ad ng-repeat="ad in ctrl.ads | filter: {title: ctrl.query} | orderBy: '+price' track by ad.id"
       model="ad"></ad>
 </div>

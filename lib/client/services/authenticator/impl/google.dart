@@ -7,6 +7,8 @@ import 'js_sdk.dart';
 import 'dart:async';
 import 'dart:js';
 
+import 'package:jwt/base64url.dart';
+
 _callOnce(Function f) {
   bool called = false;
   return (val) {
@@ -20,7 +22,7 @@ _callOnce(Function f) {
 /**
  * A proxy for communicating with the Google+ JavaScript SDK
  */
-class GoogleSDK extends JavaScriptSDK {
+class GoogleSDK extends JavaScriptLibrary {
 
   String _clientId;
 
@@ -32,7 +34,6 @@ class GoogleSDK extends JavaScriptSDK {
   Future<Map> signIn({Iterable<String> scope: const []}) {
     var completer = new Completer<JsObject>();
     // Google SDK calls the callback twice, need to make sure it only works once
-    context['monkeyButt'] = _callOnce(completer.complete);
     SDK['auth'].callMethod('signIn', [
       new JsObject.jsify({
         'clientid': _clientId,
@@ -47,13 +48,26 @@ class GoogleSDK extends JavaScriptSDK {
 
 }
 
-class GoogleAuthenticatorClient extends AuthenticatorClient {
+class GoogleClientAuthenticator extends ClientAuthenticator {
 
   static final String clientId = '947918727839-1rcsr441fvgm19vl5u8cudvciuvck2mk.apps.googleusercontent.com';
 
   final GoogleSDK GOO = new GoogleSDK(clientId: clientId);
 
-  String _token;
+  Map _config;
+  DateTime _expiresAt;
+
+  @override
+  String get userId;
+
+  @override
+  bool get hasExpired => new DateTime.now().compareTo(_expiresAt) >= 0;
+
+  @override
+  Map get config => { 'type': 'GO', 'config': _config };
+
+  @override
+  Future authenticate();
 
   @override
   bool get isInitialized => GOO.isInitialized;
@@ -62,13 +76,16 @@ class GoogleAuthenticatorClient extends AuthenticatorClient {
   Future init() => GOO.init();
 
   @override
-  String get token => _token;
-
-  @override
   Future login() =>
     GOO.signIn(scope: ['email', 'profile'])
-       .then((response) { _token = response['access_token']; return response; });
+       .then((response) {
+         var expiresIn = int.parse(response['expires_in']);
+         _expiresAt = new DateTime.now().add(new Duration(seconds: expiresIn));
+         _config = response;
+         return response;
+       });
 
   @override
   Future logout() => new Future(GOO.signOut);
+
 }

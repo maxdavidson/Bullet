@@ -8,14 +8,30 @@ part of bullet.client.views;
 class LoginView {
   String query = '';
 
-  AuthenticatorClient FB = new FacebookAuthenticatorClient();
-  AuthenticatorClient GOO = new GoogleAuthenticatorClient();
+  final ClientAuthenticator FB = new FacebookClientAuthenticator();
+  final ClientAuthenticator GOO = new GoogleClientAuthenticator();
+
+  final ClientAuthenticatorProvider provider;
 
   static LoginView instance;
-  factory LoginView() => instance = (instance == null ? new LoginView._internal() : instance);
+  factory LoginView(ClientAuthenticatorProvider provider) {
+    if (instance == null)
+      instance = new LoginView._internal(provider);
+    return instance;
+  }
 
-  LoginView._internal() {
+  LoginView._internal(this.provider) {
     FB.init();
     GOO.init();
+  }
+
+  doNothing(obj) => null;
+  
+  void fbLogin() {
+    FB.login().then((_) => provider.auth = FB).catchError(doNothing);
+  }
+
+  void gooLogin() {
+    GOO.login().then((_) => provider.auth = GOO).catchError(doNothing);
   }
 }

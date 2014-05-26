@@ -35,6 +35,6 @@ ad.ng-leave {
   -ms-transform: rotateX(0deg);
   -o-transform: rotateX(0deg);
   transform: rotateX(0deg);
-  height: 115px;
+  height: 95px;
   opacity: 1;
 }

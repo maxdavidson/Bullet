@@ -5,7 +5,17 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:jwt/base64url.dart';
 
-class JavaScriptSDK {
+/**
+ * Convert a [JsObject] into a native Dart [Object].
+ * Works by serializing to JSON in JS and then deserializing with Dart.
+ */
+Object convertJsObject(JsObject js) =>
+  JSON.decode(context['JSON'].callMethod('stringify', [js]));
+
+/**
+ * Wraps a JS library.
+ */
+class JavaScriptLibrary {
 
   bool _initialized = false;
   String _SDK;
@@ -15,18 +25,12 @@ class JavaScriptSDK {
   bool get isInitialized => _initialized;
   JsObject get SDK => context[_SDK];
 
-  JavaScriptSDK(String SDK, {this.scriptUri, String callbackParam})
+  JavaScriptLibrary(String SDK, {this.scriptUri, String callbackParam})
     : _SDK = SDK, _callbackParam = callbackParam;
 
   /**
-   * Convert a JsObject into a native Dart Map or List
-   */
-  convertJsObject(JsObject js) =>
-    JSON.decode(context['JSON'].callMethod('stringify', [js]));
-
-  /**
    * Inject a script tag and wait for it to load.
-   * If [callbackParam] is given, the script will be given a callback parameter
+   * If [callbackParam] is given, the script will be given a callback parameter, JSONP-style,
    * that determines when the future completes. Otherwise, it completes when
    * the script is loaded from the injected script tag.
    */
@@ -48,11 +52,18 @@ class JavaScriptSDK {
     script.setAttribute('src', (callbackParam == null) ? url : '$url?$callbackParam=$randomString');
 
     return completer.future
-      .then((JsObject obj) { if (callbackParam != null) context.deleteProperty(randomString); return obj; });
+      .then((event) { 
+        if (callbackParam != null) context.deleteProperty(randomString); 
+        return event; 
+      });
   }
 
+  /**
+   * If a library url is given, injects that asynchronously,
+   *  otherwise completes immediately.
+   */
   Future init() => scriptUri == null || _initialized
-    ? new Future.value(null)
+    ? new Future.sync(() => null)
     : _injectJsScript(scriptUri, callbackParam: _callbackParam)
       .then((_) => _initialized = true);
 

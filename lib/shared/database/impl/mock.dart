@@ -1,9 +1,10 @@
-library bullet.common.database.mock;
+library bullet.database.mock;
 
+import 'dart:async';
 import 'dart:math';
 import 'package:stream_ext/stream_ext.dart';
-import 'package:bullet/common/database/database.dart';
-export 'package:bullet/common/database/database.dart';
+import 'package:bullet/shared/database/database.dart';
+export 'package:bullet/shared/database/database.dart';
 
 class MockDatabase implements Database {
 
@@ -33,7 +34,7 @@ class MockDatabase implements Database {
         .map((id) => data['ads'].firstWhere((Map map) => map[ID] == id))
         .map((Map map) => map..['price'] = new Random().nextInt(1000)));
 
-  AuthenticatorClient authenticator;
+  Authenticator authenticator;
 
   MockDatabase(this.authenticator);
 

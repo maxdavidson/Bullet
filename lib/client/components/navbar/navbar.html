@@ -1,6 +1,6 @@
 <nav>
   <ul>
-    <li><a href="" ng-click="ctrl.goTo('home')">Home</a></li>
-    <li><a href="" ng-click="ctrl.goTo('login')">Login</a></li>
+    <li><a push-href="/">Home</a></li>
+    <li ng-if="!ctrl.provider.isLoggedIn")><a push-href="/login">Login</a></li>
   </ul>
 </nav>

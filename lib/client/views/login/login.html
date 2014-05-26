@@ -1,10 +1,4 @@
 <h2>Login</h2>
 
-<button ng-disabled="!ctrl.FB.isInitialized" ng-click="ctrl.FB.login()">Login with Facebook</button>
-<button ng-disabled="!ctrl.GOO.isInitialized" ng-click="ctrl.GOO.login()">Login with Google</button>
-
-<h3>Facebook token:</h3>
-<p>{{ ctrl.FB.token }}</p>
-
-<h3>Google token:</h3>
-<p>{{ ctrl.GOO.token }}</p>
+<button ng-disabled="!ctrl.FB.isInitialized || ctrl.provider.isLoggedIn" ng-click="ctrl.fbLogin()">Login with Facebook</button>
+<button ng-disabled="!ctrl.GOO.isInitialized || ctrl.provider.isLoggedIn" ng-click="ctrl.gooLogin()">Login with Google</button>

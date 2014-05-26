@@ -1,10 +1,15 @@
 library bullet.common.database.mongodb;
 
-import 'package:stream_ext/stream_ext.dart';
-import 'package:mongo_dart/mongo_dart.dart';
-import 'package:bullet/common/database/database.dart';
-export 'package:bullet/common/database/database.dart';
+import 'dart:async';
 
+import 'package:mongo_dart/mongo_dart.dart';
+
+import 'package:bullet/server/authenticator/server.dart';
+import 'package:bullet/shared/database/database.dart';
+export 'package:bullet/shared/database/database.dart';
+
+
+// Limited mongodb filter
 Function filter(Map criteria) =>
   (Map map) => (criteria == null)
     ? true
@@ -17,54 +22,60 @@ Function project(List projection) =>
     .where((key) => (projection == null) || projection.contains(key))
     .fold({}, (newMap, key) => newMap..[key] = map[key]);
 
+
 class MongoDb implements Database {
 
-  Db mongodb;
-  AuthenticatorClient authentication;
-  MongoDb(this.authentication, this.mongodb);
-
+  final Db mongodb;
   final updates = new StreamController<Map>.broadcast();
 
-  Stream<Map> find(String collection, {Map query, List projection, bool live: false, metaData}) {
+  MongoDb(this.mongodb);
+
+  @override
+  Stream<Map> find(String collection, {Map query, List projection, bool live: false, Map metadata}) {
 
     if (query != null && query['_id'] != null && query['_id'] is String)
       query['_id'] = new ObjectId.fromHexString(query['_id']);
 
-    Function close;
+    Function close = () => null;
     StreamController<Map> controller;
+
     controller = new StreamController<Map>(
-      onListen: () =>
+      onListen: () {
         mongodb.open()
           .then((_) {
             var cursor = mongodb.collection(collection).find(query);
             close = cursor.close;
-            var stream = cursor.stream
+            return cursor.stream
               .map((Map map) => map..['created']=(map['_id'].value as ObjectId).dateTime.toIso8601String())
-              .map((Map map) => map..['_id']=(map['_id'].value as ObjectId).toHexString());
-
-            if (live) stream = StreamExt.concat(stream, updates.stream.where(filter(query))).map(project(projection));
-
-            return stream.pipe(controller);
+              .map((Map map) => map..['_id']=(map['_id'].value as ObjectId).toHexString())
+              .forEach(controller.add)
+              .then((_) { if (live) updates.stream.where(filter(query)).forEach(controller.add); });
           })
           .catchError(controller.addError)
-          .whenComplete(close),
+          .whenComplete(close)
+          .then((_) => mongodb.close());
+      },
       onCancel: close
     );
-    return controller.stream;
+
+    return controller.stream.map(project(projection));
   }
 
-  Future<Map> insert(String collection, Map object, {metaData}) {
+  @override
+  Future<Map> insert(String collection, Map object, {Map metadata}) {
     mongodb
       .open()
       .then((_) => mongodb.collection(collection).insert(object));
       // TODO
   }
 
-  Future update(String collection, Map object, {metaData}) {
+  @override
+  Future update(String collection, Map object, {Map metadata}) {
     // TODO
   }
 
-  Future<bool> delete(String collection, Map object, {metaData}) {
+  @override
+  Future<bool> delete(String collection, Map object, {Map metadata}) {
     // TODO
   }
 

@@ -8,21 +8,24 @@ part of bullet.client.components;
   map: const { 'model': '=>!model' })
 class AdComponent implements AttachAware, DetachAware {
   Ad model;
+  Router router;
+
+  AdComponent(this.router);
 
   bool get isLive => !model.isPaused;
 
   toggle() => model.isPaused ? attach() : detach();
 
+  @override
   attach() {
-    if (model != null && model.isPaused) {
-      new Future(model.resume)
-        .then((_) => print('Resumed ${model.id}'));
-    }
+    if (model != null && model.isPaused)
+      model.resume();
   }
 
+  @override
   detach() {
-    if (model != null && !model.isPaused) {
-      new Future(model.pause)
-        .then((_) => print('Paused ${model.id}'));
-    }
-  }}
+    if (model != null && !model.isPaused)
+      model.pause();
+  }
+
+}

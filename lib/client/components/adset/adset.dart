@@ -11,27 +11,43 @@ class AdsetComponent implements DetachAware {
   final AdMapper mapper;
   final queries = new StreamController<String>();
   final set = new ReactiveProperty<Set<Ad>>(new Set<Ad>());
-  final list = new ReactiveProperty<List<Ad>>(new List<Ad>());
 
-  List<Ad> get ads => list.value;
+  //Iterable<Ad> get ads => set.value;
+  List<Ad> ads = new List<Ad>();
+  //Iterable<Ad> get active_ads => ads.where((ad) => !ad.isPaused);
 
   String query = '';
-  int limit = 5;
+  int limit = 8;
 
-  AdsetComponent(this.mapper, Scope scope, RouteProvider route) {
-    set.map((Set set) => set.toList()).pipe(list);
+  AdsetComponent(
+      this.mapper,
+      Scope scope,
+      RouteProvider route,
+      Router router,
+      dom.Window window,
+      NgRoutingUsePushState routing)
+  {
+    set.listen((vals) => vals.forEach((ad) { if (!ads.contains(ad)) ads.add(ad); }));
 
-    scope.watch("ctrl.query", (curr, prev) => queries.add(curr));
-
+    var title = window.document.title;
+    scope.watch('ctrl.query', (curr, prev) => queries.add(curr));
     queries.stream
       .transform(debounce(const Duration(milliseconds: 500)))
-      .forEach(runQuery);
+      .forEach((val) {
+        limit = 8;
+
+        // Need to update url without reloading view, can't do it in router
+        if (routing.usePushState)
+          window.history.replaceState(null, title, '/find/$val');
+
+        runQuery(val);
+      });
+   // runQuery();
   }
 
-  void increaseLimit() { limit++; }
+  void increaseLimit() { if (set != null && set.isPaused) set.resume(); }
 
-  void runQuery([String input]) {
-    limit = 5;
+  void runQuery([String input = '']) {
     mapper.find(query: {
         r'$query': { 'title': { r'$regex': input, r'$options': 'i' } } ,
         'orderby': { '_id' : -1 }

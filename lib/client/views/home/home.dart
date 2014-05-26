@@ -10,6 +10,7 @@ class HomeView {
   String query = '';
 
   HomeView(Scope scope, Router router, RouteProvider rp) {
-    if (rp.parameters.containsKey('query')) query = rp.parameters['query'];
+    if (rp.parameters.containsKey('query'))
+      query = Uri.decodeComponent(rp.parameters['query']);
   }
 }

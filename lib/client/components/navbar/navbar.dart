@@ -6,9 +6,11 @@ part of bullet.client.components;
   templateUrl: '/packages/bullet/client/components/navbar/navbar.html',
   cssUrl: '/packages/bullet/client/components/navbar/navbar.css')
 class NavbarComponenent {
-  Router router;
 
-  NavbarComponenent(this.router);
+  final Router router;
+  final ClientAuthenticatorProvider provider;
+
+  NavbarComponenent(this.router, this.provider);
 
   goTo(String view) => router.go(view, {});
 

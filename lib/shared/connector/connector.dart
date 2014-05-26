@@ -2,6 +2,7 @@ library bullet.connector;
 
 import 'dart:async';
 
+
 /**
  * Defines a way to subscribe to event streams defined somewhere else.
  */

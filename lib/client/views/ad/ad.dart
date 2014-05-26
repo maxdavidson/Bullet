@@ -6,9 +6,12 @@ part of bullet.client.views;
   templateUrl: '/packages/bullet/client/views/ad/ad.html',
   cssUrl: '/packages/bullet/client/views/ad/ad.css')
 class AdView {
-
-  AdView() {
-
+  Ad ad;
+  AdView(AdMapper mapper, RouteProvider rp, Router router) {
+    mapper.get(rp.parameters['adId'])
+      .then((Ad result) {
+        ad = result;
+      })
+      .catchError((e) => router.go('home', {}));
   }
-
 }
