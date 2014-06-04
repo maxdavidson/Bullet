@@ -17,7 +17,7 @@ abstract class Database {
    * If [live] is true, then the stream will stay alive and broadcast any new matches.
    * Otherwise, the stream ends when no more entries are found.
    */
-  Stream<Map> find(String collection, {Map query, List<String> projection, bool live: false, Object metadata});
+  Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata});
 
   /**
    * Inserts the map [object] into the [collection].

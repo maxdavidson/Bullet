@@ -2,7 +2,7 @@ library bullet.database.mapper;
 
 import 'dart:async';
 
-import 'package:bullet/shared/stream_helpers.dart';
+import 'package:bullet/shared/helpers.dart';
 import 'package:bullet/shared/database/database.dart';
 export 'package:bullet/shared/database/database.dart';
 
@@ -18,37 +18,70 @@ class Entity extends ReactiveProperty<Map> {
   get id => value[idField];
   set id(val) => value[idField] = val;
 
-  DateTime get created => value['created'];
-  DateTime get updated => value['updated'];
+  DateTime _created, _updated;
+
+  DateTime _tryParse(String date) => (date == null) ? null : DateTime.parse(date);
+
+  // Need to return the same DateTime instance, without changing the internal state
+  DateTime get created {
+    var parsed = _tryParse(value['created']);
+    if (_created == null || _created.compareTo(parsed) != 0)
+      _created = parsed;
+    return _created;
+  }
+
+  DateTime get updated {
+    var parsed = _tryParse(value['updated']);
+    if (_updated == null || _updated.compareTo(parsed) != 0)
+      _updated = parsed;
+    return _updated;
+  }
 
   Entity() : super({}) {
-    //this.map((me) => 'Updated ${this.id}').listen(print);
-    //this.map((me) => 'Created ${this.id}').first.then(print);
+    this.map((update) => 'Update: ${update}').forEach(print);
   }
+
+  getField(String field, {create()}) =>
+    value.containsKey(field)
+      ? value[field]
+      : (create != null)
+        ? value[field] = create()
+        : null;
 
   /**
    * Starts subscription to update stream.
    * Returns with self on first update
    */
   Future<Entity> start() {
+    if (id == null) return new Future.value(this);
+    // Listen for updates
     mapper.rawFind(query: { idField: id }, live: true).pipe(this);
     return this.first.then((_) => this);
   }
 
+  /**
+   * Transform the input stream to scan and merge the update
+   */
   @override
-  Future addStream(Stream<Map> stream) => super.addStream(
-      stream.transform(scan(value, (Map state, Map update) {
-        update.forEach((String key, val) => state[key] = val);
-        state['created'] = state.containsKey('created') 
-            ? DateTime.parse(state['created']) 
-            : new DateTime.now();
-        state['updated'] = new DateTime.now();
-        return state;
-      })));
+  Future addStream(Stream<Map> stream) =>
+    super.addStream(stream.transform(scan(value, (Map state, Map update) => state..addAll(update))));
 
-  // TODO
+  Future<Entity> save() {
+    var now = new DateTime.now().toIso8601String();
+    value['updated'] = now;
+    if (id == null) {
+      value['created'] = now;
+      return mapper.rawInsert(value)
+        .then((Map unique) => id = unique[idField])
+        .then((_) => start());
+    } else {
+      return mapper.rawUpdate(value)
+        .then((_) => this);
+    }
+  }
+
   Future destroy() {
-
+    // TODO
   }
 }
 
@@ -88,9 +121,7 @@ class EntityMapper<T extends Entity> {
    */
   _createEntityInstance(dynamic id) {
     if (!cache.containsKey(id)) {
-      T entity = cache[id] = (builder == null) ? new Entity() : builder()
-        ..mapper = this
-        ..id = id;
+      T entity = cache[id] = create()..id = id;
       return entity.start();
     }
     return cache[id];
@@ -99,8 +130,8 @@ class EntityMapper<T extends Entity> {
   /**
    * Queries the database. Returns a stream of unique, self-updating entities.
    */
-  Stream<T> find({Map query, bool live: false}) =>
-    db.find(collectionName, query: query, projection: [idField], live: live)
+  Stream<T> find({Map query, int limit, int skip, Map orderBy, bool live: false}) =>
+    db.find(collectionName, query: query, fields: [idField], orderBy: orderBy, limit: limit, skip: skip, live: live)
       .map((result) => result[idField])
       .transform(unique())
       .asyncMap(_createEntityInstance);
@@ -108,8 +139,18 @@ class EntityMapper<T extends Entity> {
   /**
    * Queries the associated database for raw result maps.
    */
-  Stream<Map> rawFind({Map query, List<String> projection, bool live}) =>
-    db.find(collectionName, query: query, projection: projection, live: live);
+  Stream<Map> rawFind({Map query, List<String> fields, bool live}) =>
+    db.find(collectionName, query: query, fields: fields, live: live);
+
+  /**
+   * Update a raw map
+   */
+  Future<Map> rawUpdate(Map document) => db.update(collectionName, document);
+
+  /**
+   * Insert map into database
+   */
+  Future rawInsert(Map document) => db.insert(collectionName, document);
 
   /**
    * Get a [T] instance with the specific ID if it exists.
@@ -117,11 +158,7 @@ class EntityMapper<T extends Entity> {
   Future<T> get(dynamic id) => find(query: { idField: id }).first;
 
   /**
-   * Creates a new [T] and saves it.
-   * If successful, the model gets an id. Otherwise, it throws.
+   * Creates a new [T] connected to this [EntityMapper].
    */
-  Future<T> create([Map model = const {}]) =>
-    db.insert(collectionName, model)
-      .then((Map response) => response[idField])
-      .then(_createEntityInstance);
+  T create() => ((builder == null) ? new Entity() : builder())..mapper = this;
 }

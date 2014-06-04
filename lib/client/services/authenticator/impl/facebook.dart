@@ -64,6 +64,8 @@ class FacebookSDK extends JavaScriptLibrary {
   Future<Map> api(String path, {String method: 'get', Map params}) => _callAsyncMethod('api', args: [path, method, params]);
   Future<Map> getLoginStatus() => _callAsyncMethod('getLoginStatus');
 
+  Future<Map> getUserInfo({userId: 'me'}) => api('/$userId');
+
   String getAccessToken() => _callMethod('getAccessToken');
   String getUserID() => _callMethod('getUserID');
   Map getAuthResponse() => _callMethod('getAuthResponse');
@@ -77,12 +79,25 @@ class FacebookClientAuthenticator extends ClientAuthenticator {
   final FacebookSDK FB = new FacebookSDK(appId: clientId);
 
   DateTime _expiresAt;
+  Map _userInfo;
 
   @override
-  Map get config => isInitialized ? { 'type': 'FB', 'config': FB.getAuthResponse() } : null;
+  Map get config => isInitialized ? { 'type': type, 'config': FB.getAuthResponse() } : null;
 
   @override
   String get userId => FB.getUserID();
+
+  String get firstName => _userInfo == null ? null : _userInfo['first_name'];
+  String get lastName => _userInfo == null ? null : _userInfo['last_name'];
+
+  @override
+  String get userName => '$firstName $lastName';
+
+  @override
+  String get email => _userInfo == null ? null : _userInfo['email'];
+
+  @override
+  String get type => 'FB';
 
   @override
   bool get hasExpired => new DateTime.now().compareTo(_expiresAt) >= 0;
@@ -93,17 +108,22 @@ class FacebookClientAuthenticator extends ClientAuthenticator {
   @override
   bool get isInitialized => FB.isInitialized;
 
+  Future _init;
+
   @override
-  Future init() => FB.init();
+  Future init() => (_init != null) ? _init : _init = FB.init();
 
   @override
   Future login() => FB.login(scope: ['email'])
 /*    FB.getLoginStatus()
       .catchError((_) => FB.login(scope: ['email']))*/
-      .then((response) => response['authResponse'])
       .then((response) {
-        _expiresAt = new DateTime.now().add(new Duration(seconds: response['expiresIn']));
-        return response;
+        var authResponse = response['authResponse'];
+        _expiresAt = new DateTime.now().add(new Duration(seconds: authResponse['expiresIn']));
+
+        return FB.getUserInfo()
+          .then((Map info) => _userInfo = info).then(print)
+          .then((_) => authResponse);
       });
 
   // TODO

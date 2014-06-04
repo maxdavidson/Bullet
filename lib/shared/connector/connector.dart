@@ -11,7 +11,7 @@ abstract class ConnectorClient {
    * Subscribes to the behavior defined by [identifier].
    * Can be used for remote procedure call, since streams may end
    */
-  Stream subscribe(String identifier, [data]);
+  Stream subscribe(String identifier, [List args, Map kwargs]);
 }
 
 /**
@@ -25,7 +25,7 @@ abstract class ConnectorServer<T extends Stream> extends EventSink<T> {
    * The handler may return void or a stream, a future,
    * or a value of a serializable object.
    */
-  void bind(String identifier, dynamic handler(dynamic));
+  void bind(String identifier, Function handler);
 
   /**
    * Unbind the behavior for a specific identifier.

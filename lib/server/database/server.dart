@@ -2,15 +2,18 @@ import 'dart:async';
 import 'package:bullet/shared/database/database.dart';
 import 'package:bullet/server/authenticator/server.dart';
 
+/**
+ * Not really needed, but nice nonetheless
+ */
 abstract class DatabaseDecorator implements Database {
 
   final Database delegate;
 
-  DatabaseDecorator(this.delegate);
+  const DatabaseDecorator(this.delegate);
 
   @override
-  Stream<Map> find(String collection, {Map query, List<String> projection, bool live: false, Object metadata}) =>
-    delegate.find(collection, query: query, projection: projection, live: live, metadata: metadata);
+  Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata}) =>
+    delegate.find(collection, query: query, fields: fields, orderBy: orderBy, limit: limit, skip: skip, live: live, metadata: metadata);
 
   @override
   Future<Map> insert(String collection, Map object, {Object metadata}) =>
@@ -31,41 +34,69 @@ abstract class Permission {
   static const DENY = const DenyPermission();
   static const AUTHENTICATE = const AuthenticatePermission();
   const Permission();
-  Future<bool> authorize(Object token, Object metadata);
+  Future<bool> authorize(String concern, Object request, Object metadata);
 }
 
 class AllowPermission extends Permission {
   const AllowPermission();
   @override
-  Future<bool> authorize(Object token, Object metadata) => new Future.value(true);
+  Future<bool> authorize(String concern, Object request, Object metadata) => new Future.sync(() => true);
 }
 
 class DenyPermission extends Permission {
   const DenyPermission();
   @override
-  Future<bool> authorize(Object token, Object metadata) => new Future.value(false);
+  Future<bool> authorize(String concern, Object request, Object metadata) => new Future.sync(() => false);
 }
+
+typedef PermissionFn(Object);
+
+class CustomPermission extends Permission {
+  final PermissionFn onAuthorize;
+  const CustomPermission({this.onAuthorize});
+  @override
+  Future<bool> authorize(String concern, Object request, Object metadata) =>
+    new Future(() {
+      if (onAuthorize != null) {
+        var result = onAuthorize(request);
+        if (result != null && (result is bool || result is Future<bool>))
+          return result;
+      }
+      return false;
+    })
+    .catchError((_) => false);
+}
+
+typedef AuthReactionFn(Authenticator, Object);
 
 class AuthenticatePermission extends Permission {
-  const AuthenticatePermission();
-  Future<bool> authorize(Object token, Object metadata) =>
-    new ServerAuthenticator.fromJson(metadata)
-      .authenticate()
-      .then((_) => true)
-      .catchError((_) => false);
-}
+  final AuthReactionFn onAuthenticate;
 
-var permissions = {
-  'ads': const DatabasePermissions(update: Permission.ALLOW, create: Permission.DENY)
-};
+  const AuthenticatePermission({this.onAuthenticate});
+
+  @override
+  Future<bool> authorize(String concern, Object request, Object metadata) {
+    //print('Metadata: $metadata');
+    var auth = new ServerAuthenticator.fromJson(metadata);
+    //print('Authenticator: $auth');
+    return auth.authenticate()
+      .then((_) {
+        if (onAuthenticate != null) {
+          var result = onAuthenticate(auth, request);
+          if (result != null && (result is bool || result is Future))
+            return result;
+        }
+        return true;
+      })
+      .catchError((_) => false);
+  }
+}
 
 class DatabasePermissions extends Permission {
 
-  final Permission create;
-  final Permission read;
-  final Permission update;
-  final Permission delete;
+  final Permission create, read, update, delete;
 
+  // Default constructor with default values.
   const DatabasePermissions({
     this.create: Permission.DENY,
     this.read:   Permission.ALLOW,
@@ -80,19 +111,19 @@ class DatabasePermissions extends Permission {
       delete = permission;
 
   @override
-  Future<bool> authorize(Object token, Object metadata) {
-    switch (token) {
-      case 'create':  return authorizeCreate(metadata);
-      case 'read':    return authorizeRead(metadata);
-      case 'update:': return authorizeUpdate(metadata);
-      case 'delete':  return authorizeDelete(metadata);
+  Future<bool> authorize(String concern, Object request, Object metadata) {
+    switch (concern) {
+      case 'create':  return authorizeCreate(request, metadata);
+      case 'read':    return authorizeRead(request, metadata);
+      case 'update:': return authorizeUpdate(request, metadata);
+      case 'delete':  return authorizeDelete(request, metadata);
     }
   }
 
-  Future<bool> authorizeCreate(Object metadata) => create.authorize('create', metadata);
-  Future<bool> authorizeRead(Object metadata) => read.authorize('read', metadata);
-  Future<bool> authorizeUpdate(Object metadata) => update.authorize('update', metadata);
-  Future<bool> authorizeDelete(Object metadata) => delete.authorize('delete', metadata);
+  Future<bool> authorizeCreate(Object request, Object metadata) => create.authorize('create', request, metadata);
+  Future<bool> authorizeRead(Object request, Object metadata) => read.authorize('read', request, metadata);
+  Future<bool> authorizeUpdate(Object request, Object metadata) => update.authorize('update', request, metadata);
+  Future<bool> authorizeDelete(Object request, Object metadata) => delete.authorize('delete', request, metadata);
 
 }
 
@@ -100,58 +131,67 @@ class PermissionsDecorator extends DatabaseDecorator {
 
   final Map<String, DatabasePermissions> permissions;
 
-  PermissionsDecorator(Database delegate, {this.permissions: const {}}) : super(delegate);
+  const PermissionsDecorator(Database delegate, {this.permissions: const {}}) : super(delegate);
 
-  void _throwIfNotAuthorized(bool authorized) { if (!authorized) throw 'Not authorized!'; }
+  void _throwIfNotAuthorized(bool authorized) {
+    if (!authorized) throw 'Not authorized!';
+  }
 
   @override
-  Stream<Map> find(String collection, {Map query, List<String> projection, bool live: false, Object metadata}) {
-    if (!permissions.containsKey(collection))
-      throw 'No permissions found for collection "$collection".';
+  Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata}) {
+
+    DatabasePermissions permission = (permissions.containsKey(collection))
+      ? permissions[collection]
+      : const DatabasePermissions();
 
     var controller = new StreamController<Map>();
-    var permission = permissions[collection] as DatabasePermissions;
 
-    permission.authorizeRead(metadata)
+    permission.authorizeRead(query, metadata)
+      /*.then((value) {
+        print('Collection: $collection, Query: $query, Meta: $metadata, Access: $value');
+        return value;
+      })*/
       .then(_throwIfNotAuthorized)
-      .then((_) => super.find(collection, query: query, projection: projection, live: live, metadata: metadata))
+      .then((_) => super.find(collection, query: query, fields: fields, orderBy: orderBy, limit: limit, skip: skip, live: live, metadata: metadata))
       .then(controller.addStream)
       .catchError(controller.addError);
 
-    return controller.stream;
+    return controller.stream
+      .asyncExpand((Map result) =>
+        permission.authorizeRead(result, metadata)
+          .then((_) => result).asStream());
   }
 
   @override
   Future<Map> insert(String collection, Map object, {Object metadata}) {
-    if (!permissions.containsKey(collection))
-      throw 'No permissions found for collection "$collection".';
+    DatabasePermissions permission = (permissions.containsKey(collection))
+      ? permissions[collection]
+      : const DatabasePermissions();
 
-    return (permissions[collection] as DatabasePermissions)
-      .authorizeCreate(metadata)
+    return permission.authorizeCreate(object, metadata)
       .then(_throwIfNotAuthorized)
       .then((_) => super.insert(collection, object));
   }
 
   @override
   Future update(String collection, Map object, {Object metadata}) {
-    if (!permissions.containsKey(collection))
-      throw 'No permissions found for collection "$collection".';
+    DatabasePermissions permission = (permissions.containsKey(collection))
+      ? permissions[collection]
+      : const DatabasePermissions();
 
-    return (permissions[collection] as DatabasePermissions)
-      .authorizeUpdate(metadata)
+    return permission.authorizeUpdate(object, metadata)
       .then(_throwIfNotAuthorized)
       .then((_) => super.update(collection, object));
   }
 
   @override
   Future<bool> delete(String collection, Map object, {Object metadata}){
-    if (!permissions.containsKey(collection))
-      throw 'No permissions found for collection "$collection".';
+    DatabasePermissions permission = (permissions.containsKey(collection))
+      ? permissions[collection]
+      : const DatabasePermissions();
 
-    return (permissions[collection] as DatabasePermissions)
-      .authorizeDelete(metadata)
+    return permission.authorizeDelete(object, metadata)
       .then(_throwIfNotAuthorized)
-      .then((_) => super.delete(collection, object));
-  }
+      .then((_) => super.delete(collection, object));  }
 
 }

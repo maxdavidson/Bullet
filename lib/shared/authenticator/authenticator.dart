@@ -7,10 +7,28 @@ import 'dart:async';
  */
 abstract class Authenticator {
 
+  const Authenticator();
+
   /**
    * The specific ID identifying the user.
    */
   String get userId;
+
+
+  /**
+   * The user's name, not the username
+   */
+  String get userName;
+
+  /**
+   * The user's email address
+   */
+  String get email;
+
+  /**
+   * A string representation of the type of authenticator, e.g. FB
+   */
+  String get type;
 
   /**
    * Checks if authenticator is authorized.

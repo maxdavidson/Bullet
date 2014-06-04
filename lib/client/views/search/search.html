@@ -1,0 +1,43 @@
+<loader class="fade" ng-if="ctrl.isLoading"></loader>
+
+<div class="login-view fade" ng-if="ctrl.ads != null">
+
+  <div class="searcher">
+    <input type="text" ng-model="ctrl.query.query" placeholder="search" autofocus>
+
+    <div id="sortField" class="icons">
+      <div ng-class="{ selected: ctrl.query.sortField == 'price'}" ng-click="ctrl.query.sortField = 'price'">
+        <img src="/packages/bullet/client/views/search/iconmonstr-currency-dollar-icon.svg">
+      </div>
+      <div ng-class="{ selected: ctrl.query.sortField == 'updated'}" ng-click="ctrl.query.sortField = 'updated'">
+        <img src="/packages/bullet/client/views/search/iconmonstr-time-icon.svg">
+      </div>
+    </div>
+
+    <div id="ordering" class="icons" ng-click="ctrl.query.ascending = !ctrl.query.ascending">
+      <div class="arrow">
+        <img ng-class="{ flip: !ctrl.query.ascending }" src="/packages/bullet/client/views/search/iconmonstr-arrow-25-icon.svg">
+      </div>
+    </div>
+
+    <div class="icons right" ng-if="ctrl.provider.isLoggedIn">
+      <div class="save" ng-if="!ctrl.queryIsSaved" ng-click="ctrl.saveQuery()">
+        <img src="/packages/bullet/client/views/search/iconmonstr-save-11-icon.svg">
+      </div>
+      <div class="plus">
+        <a push-href="/new"><img src="/packages/bullet/client/views/search/iconmonstr-plus-2-icon.svg"></a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="ads"
+       infinite-scroll="ctrl.increaseLimit()"
+       infinite-scroll-disabled="ctrl.isLoading"
+       infinite-scroll-immediate-check="false"
+       ng-if="ctrl.ads != null && ctrl.ads.isNotEmpty">
+    <ad ng-repeat="ad in ctrl.ads | filter: {title: ctrl.query.query} | orderBy: [ctrl.query.sortField, 'id'] : !ctrl.query.ascending | limitTo: ctrl.limit"
+        model="ad"></ad>
+  </div>
+
+</div>

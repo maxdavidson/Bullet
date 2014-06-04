@@ -1,5 +1,5 @@
 name: bullet
-version: 0.3.0
+version: 0.6.0
 dependencies:
   browser: any
   angular: '>= 0.11.0'
@@ -11,14 +11,18 @@ dependencies:
   ng_infinite_scroll: any
   jwt: any
   quiver: any
+  intl: any
 dependency_overrides:
   angular: '>= 0.11.0'
+    #path: '../angular.dart/'
 transformers:
 - angular:
     html_files:
     - lib/client/components/ad/ad.html
-    - lib/client/components/adset/adset.html
-    - lib/client/components/searcher/searcher.html
     - lib/client/components/navbar/navbar.html
-    - lib/client/views/home/home.html
+    - lib/client/components/loader/loader.html
+    - lib/client/views/search/search.html
     - lib/client/views/login/login.html
+    - lib/client/views/ad/ad.html
+    - lib/client/views/create-ad/create-ad.html
+    - lib/client/views/profile/profile.html

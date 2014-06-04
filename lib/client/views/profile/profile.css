@@ -1,0 +1,22 @@
+.colors {
+  /*border: 5px solid rgba(255,255,255,0.2);*/
+}
+
+.colors:before,
+.colors:after {
+  content: "";
+  display: table;
+}
+.colors:after {
+  clear: both;
+}
+
+.colors .color {
+  float: left;
+  height: 50px;
+  width: 50px;
+}
+
+.colors .color:hover {
+  cursor: pointer;
+}

@@ -1,37 +1,40 @@
 part of bullet.client.views;
 
 @Component(
-  selector: 'login-view',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/views/login/login.html',
-  cssUrl: '/packages/bullet/client/views/login/login.css')
+    selector: 'login-view',
+    publishAs: 'ctrl',
+    templateUrl: '/packages/bullet/client/views/login/login.html',
+    cssUrl: const [
+        '/packages/bullet/client/views/login/login.css',
+        '/packages/bullet/client/views/views.css'])
 class LoginView {
-  String query = '';
 
-  final ClientAuthenticator FB = new FacebookClientAuthenticator();
-  final ClientAuthenticator GOO = new GoogleClientAuthenticator();
+  static ClientAuthenticator _FB, _GOO;
 
   final ClientAuthenticatorProvider provider;
+  final Router router;
+  final UserMapper users;
 
-  static LoginView instance;
-  factory LoginView(ClientAuthenticatorProvider provider) {
-    if (instance == null)
-      instance = new LoginView._internal(provider);
-    return instance;
+  String query = '';
+
+  ClientAuthenticator get FB => (_FB == null) ? _FB = new FacebookClientAuthenticator() : _FB;
+  ClientAuthenticator get GOO => (_GOO == null) ? _GOO = new GoogleClientAuthenticator() : _GOO;
+
+  bool isLoading = true;
+
+  LoginView(this.provider, this.router, this.users) {
+    Future.wait([FB.init(), GOO.init()]).then((_) => isLoading = false);
   }
 
-  LoginView._internal(this.provider) {
-    FB.init();
-    GOO.init();
+  Future _login(ClientAuthenticator authenticator) {
+    if (authenticator.isInitialized) {
+      return authenticator.login()
+        .then((_) => provider.auth = authenticator)
+        .then((_) => router.go('profile', { 'userId': 'me' }))
+        .catchError((_) => null);
+    }
   }
 
-  doNothing(obj) => null;
-  
-  void fbLogin() {
-    FB.login().then((_) => provider.auth = FB).catchError(doNothing);
-  }
-
-  void gooLogin() {
-    GOO.login().then((_) => provider.auth = GOO).catchError(doNothing);
-  }
+  Future fbLogin() => _login(FB);
+  Future gooLogin() => _login(GOO);
 }

@@ -1,0 +1,16 @@
+<div ng-switch="ctrl.isLoading">
+  <loader class="fade" ng-switch-when="true"></loader>
+
+  <div class="create-ad-view fade" ng-switch-when="false">
+
+    <h2>Create ad</h2>
+
+    <form ng-submit="ctrl.saveAd()">
+      <input type="text" ng-model="ctrl.ad.title" placeholder="title" ng-required="true" ng-maxlength="20">
+      <input type="number" ng-model="ctrl.ad.price" placeholder="price" ng-required="true" ng-min="0">
+      <textarea ng-model="ctrl.ad.description" placeholder="description" ng-required="true"></textarea>
+      <button type="submit">Save</button>
+    </form>
+
+  </div>
+</div>

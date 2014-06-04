@@ -38,7 +38,7 @@ class MockDatabase implements Database {
 
   MockDatabase(this.authenticator);
 
-  Stream<Map> find(String collection, {Map query, List projection, bool live: false, metaData}) {
+  Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata}) {
     if (!data.containsKey(collection)) throw new Exception('No such collection');
 
     bool criteriaTest(Map object) {

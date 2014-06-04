@@ -5,8 +5,8 @@ import 'package:angular/angular.dart';
 
 part 'nicedate.dart';
 
-class FormatterModule extends Module {
-  FormatterModule() {
+class FormattersModule extends Module {
+  FormattersModule() {
     bind(NiceDate);
   }
 }

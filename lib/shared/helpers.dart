@@ -2,6 +2,37 @@ library bullet.helpers;
 
 import 'dart:async';
 
+
+class Query {
+  String query = '';
+  String sortField = 'updated';
+  bool ascending = false;
+
+  Query();
+
+  Query.fromJson(Map json) {
+    if (json.containsKey('query'))
+      query = json['query'];
+    if (json.containsKey('sort') && ['updated', 'price'].contains(json['sort']))
+      sortField = json['sort'];
+    if (json.containsKey('order'))
+      ascending = json['order'] == 'asc';
+  }
+
+  factory Query.fromQueryString(String query) => new Query.fromJson(Uri.splitQueryString(query));
+
+  Map toJson() => { 'query': query, 'sort': sortField, 'order': ascending ? 'asc' : 'desc' };
+
+  String toUri() => new Uri(queryParameters: toJson()).toString().substring(1);
+}
+
+/**
+ * Perform a side effect in a stream if it is listened to.
+ ** stream.map(sideEffect((value) => doSomething(value)));
+ */
+sideEffect(fn(value)) => (value) { fn(value); return value; };
+
+
 /**
  * A reactive property that keeps track of the latest received event from the stream.
  * Also acts as a stream itself, broadcasting distinct update events.
@@ -9,16 +40,15 @@ import 'dart:async';
 class ReactiveProperty<T> extends Stream<T> implements StreamConsumer<T> {
   T _value;
   T get value => _value;
-  void set value(T newValue) => _controller.add(_value = newValue);
+  void set value(T newValue) => controller.add(_value = newValue);
 
   StreamSubscription<T> _subscription;
-  final _controller = new StreamController<T>.broadcast(sync: true);
+  final controller = new StreamController<T>.broadcast(sync: true);
 
-  StreamController<T> get controller => _controller;
 
   ReactiveProperty([T defaultValue = null]) : _value = defaultValue {
-    if (defaultValue != null) _controller.add(defaultValue);
-    _controller.stream.forEach((val) => _value = val);
+    if (defaultValue != null) controller.add(defaultValue);
+    controller.stream.forEach((val) => _value = val);
   }
 
   void pause() => _subscription.pause();
@@ -44,15 +74,16 @@ class ReactiveProperty<T> extends Stream<T> implements StreamConsumer<T> {
     else future = new Future.value();
 
     return future
-      .then((_) => _subscription = stream.listen(_controller.add, onError: _controller.addError))
+      .then((_) => _subscription = stream.listen(controller.add, onError: controller.addError))
       .then((_) => _subscription.asFuture());
   }
 
-  Future close() => _controller.close();
+  Future close() => controller.close();
 
   StreamSubscription<T> listen(void onData(T data), {Function onError, void onDone(), bool cancelOnError}) =>
-    _controller.stream.listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+    controller.stream.listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 }
+
 
 StreamTransformer debounce(Duration wait, {bool immediate: false}) {
   var timer, lastEvent;
@@ -75,32 +106,6 @@ StreamTransformer debounce(Duration wait, {bool immediate: false}) {
   });
 }
 
-StreamTransformer throttle(Duration interval, {bool immediate: false}) {
-  var lastEvent, timer;
-  return new StreamTransformer.fromHandlers(
-      handleData: (event, EventSink sink) {
-        if (timer == null || !timer.isActive) {
-          if (immediate) sink.add(event);
-          timer = new Timer.periodic(interval, (Timer timer) {
-            if (lastEvent != null) {
-              if (lastEvent != event)
-                sink.add(lastEvent);
-              else
-                timer.cancel();
-            }
-            lastEvent = event;
-          });
-        }
-      },
-      handleDone: (EventSink sink) {
-        if (timer != null) timer.cancel();
-        sink.close();
-      },
-      handleError: (error, StackTrace stackTrace, EventSink sink) {
-        if (timer != null) timer.cancel();
-        sink.addError(error);
-      });
-}
 
 StreamTransformer scan(initialValue, combine(previousValue, currentValue)) {
   var accumulator = initialValue;

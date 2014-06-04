@@ -10,10 +10,10 @@ class NavbarComponenent {
   final Router router;
   final ClientAuthenticatorProvider provider;
 
+  bool holding = false;
+
+  p() => print('hej');
+
   NavbarComponenent(this.router, this.provider);
 
-  goTo(String view) => router.go(view, {});
-
-  bool isExpanded = false;
-  toggleExpander() { isExpanded = !isExpanded; }
 }

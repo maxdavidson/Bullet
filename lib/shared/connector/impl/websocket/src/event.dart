@@ -9,71 +9,52 @@ import 'package:jwt/base64url.dart';
 String _randomString([int length = 10])
   => BASE64URL.encode(new Iterable.generate(length, (n) => new Random().nextInt(255)).toList());
 
+class PubSub {
+  final handlers = new Map<dynamic, Set<Function>>();
+  void on(value, Function fn) {
+    if (handlers[value] == null) handlers[value] = new Set<Function>();
+    handlers[value].add(fn);
+  }
+  callFn(args) => (Function fn) => Function.apply(fn, args);
+  void trigger(topic, [Iterable args = const []]) =>
+    handlers.forEach((key, fns) {
+      if (key == topic) {
+        try {
+          fns.forEach(callFn(args));
+        } catch (e) {
+          throw 'Failed to execute handler for $topic';
+        }
+      }
+    });
+}
+
 class ConnectorEvent {
 
-  static const EVENT   = 0;
-  static const CALL    = 1;
-  static const CANCEL  = 2;
-  static const ERROR   = 3;
-  static const PAUSE   = 4;
-  static const RESUME  = 5;
-  static const END     = 6;
-  static const PING    = 7;
+  static const EVENT   = 'EVENT';//0;
+  static const CALL    = 'CALL';//1;
+  static const CANCEL  = 'CANCEL';//2;
+  static const ERROR   = 'ERROR';//3;
+  static const PAUSE   = 'PAUSE';//4;
+  static const RESUME  = 'RESUME';//5;
+  static const END     = 'END';//6;
+  static const PING    = 'PING';//7;
 
-  static StreamTransformer<ConnectorEvent, ConnectorEvent> handleEvents(
-      {onEvent, onCall, onCancel, onError, onPause, onResume, onEnd, onPing})
-    => new StreamTransformer.fromHandlers(
-      handleData: (ConnectorEvent event, EventSink<ConnectorEvent> sink) {
-        final Map<int, Function> handlers = {
-          EVENT: onEvent,
-          CALL: onCall,
-          CANCEL: onCancel,
-          ERROR: onError,
-          PAUSE: onPause,
-          RESUME: onResume,
-          END: onEnd,
-          PING: onPing
-        };
+  final type;
+  final String id, event;
+  final List args;
+  final Map kwargs;
 
-        try {
-          var handler = handlers[event.type];
-          if (handler != null) handler(event, sink);
-        } catch (e) {
-          print(e);
-          //sink.add(new WebSocketConnectorEvent(WebSocketConnectorEvent.ERROR, id: event.id, event: event.event));
-        }
-      });
+  ConnectorEvent(this.type, {String id, this.event, this.args: const [], this.kwargs: const {}, bool generateId: true})
+    : this.id = (id == null && generateId) ? _randomString() : id;
 
-  String _id;
-  int type;
-  String event;
-  Object payload;
-
-  String get id => _id;
-
-  ConnectorEvent(this.type, {this.event, this.payload, id, bool generateId: true})
-    : _id = (id == null && generateId) ? _randomString() : id;
-
-  ConnectorEvent.fromEvent(ConnectorEvent otherEvent, {int type, this.payload})
-    : event = otherEvent.event, _id = otherEvent.id,
+  ConnectorEvent.fromEvent(ConnectorEvent otherEvent, {type, this.args: const [], this.kwargs: const {}})
+    : event = otherEvent.event, id = otherEvent.id,
       this.type = (type != null) ? type : otherEvent.type;
 
-  /**
-   * Defines how event objects are deserialized
-   */
-  ConnectorEvent.fromJson(Object json) {
-    var obj = json as List;
-    this
-      ..type = obj[0]
-      ..event = obj[1]
-      ..payload = obj[3]
-      .._id = obj[2];
-  }
+  ConnectorEvent.fromJson(List obj)
+    : type = obj[0], id = obj[1], event = obj[2], args = obj[3], kwargs = obj[4];
 
-  /**
-   * Defines how event objects are serialized.
-   */
-  Object toJson() => [type, event, id, payload];
+  Object toJson() => [type, id, event, args, kwargs];
 
 }
 
@@ -86,16 +67,20 @@ class ConnectorEventCodec extends Codec<ConnectorEvent, String> {
 }
 
 class ConnectorEventEncoder extends Converter<ConnectorEvent, String> {
-  String convert(ConnectorEvent input) =>
-    JSON.encode(input.toJson());
+  String convert(ConnectorEvent input) {
+    var json = input.toJson();
+    return JSON.encode(json);
+  }
 
   ChunkedConversionSink<ConnectorEvent> startChunkedConversion(sink) =>
     new _ConnectorEncoderSink(sink);
 }
 
 class ConnectorEventDecoder extends Converter<String, ConnectorEvent> {
-  ConnectorEvent convert(String input) =>
-    new ConnectorEvent.fromJson(JSON.decode(input));
+  ConnectorEvent convert(String input) {
+    var json = JSON.decode(input);
+    return new ConnectorEvent.fromJson(json);
+  }
 
   ChunkedConversionSink<String> startChunkedConversion(sink) =>
     new _ConnectorDecoderSink(sink);

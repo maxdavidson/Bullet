@@ -7,48 +7,71 @@
 @host {
   * { display: block; }
 }
+
 .ad {
-  overflow: auto;
+  display: block;
+  padding: 10px;
   width: 100%;
-  margin-bottom: 15px;
   height: 80px;
-  background: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
   box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1);
+  box-sizing: border-box;
+  transition: 100ms ease all;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
-.ad .image {
-  position: relative;
-  flex: 1;
-  max-width: 100px;
-  /*position: absolute;
-  left: 0;
+.ad:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.ad, .ad:active, .ad:hover, .ad:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ad .wrapper {
   height: 100%;
-  width: 100%;*/
-  color: rgba(0, 0, 0, 0.8);
-  background: rgba(255, 255, 255, 0.5);
+  display: table;
+}
+
+.ad .valign {
+  display: table-cell;
+  vertical-align: middle;
 }
 
 .ad .content {
-  flex-grow: 4;
-  margin: 5px;
+  height: 100%;
+}
+
+.ad .content:before,
+.ad .content:after {
+  content:"";
+  display:table;
+}
+.ad .content:after {
+  clear:both;
+}
+
+
+.ad .left {
+  float: left;
+}
+
+.ad .right {
+  float: right;
 }
 
 .ad .content .title {
-  /*position: absolute;
-  left: 5px; bottom: 5px;*/
   font-size: 1.2em;
 }
 
 .ad .content .date {
-  /*position: absolute;
-  left: 5px; top: 5px;*/
   font-size: 0.8em;
 }
 
 .ad .content .price {
-  float: right;
-  /*position: absolute;
-  top: 5px; right: 5px;*/
   font-family: 'PT Sans', sans-serif;
   font-size: 2em;
 }

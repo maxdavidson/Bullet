@@ -1,6 +1,9 @@
-<nav>
-  <ul>
-    <li><a push-href="/">Home</a></li>
-    <li ng-if="!ctrl.provider.isLoggedIn")><a push-href="/login">Login</a></li>
-  </ul>
-</nav>
+<div class="wrapper">
+  <div class="navbar">
+    <a class="title" push-href="/">bullet</a>
+    <a class="link" push-href="/login" ng-if="!ctrl.provider.isLoggedIn">Login</a>
+    <a class="link" push-href="/profile/me" ng-if="ctrl.provider.isLoggedIn">
+      Welcome, <b>{{ ctrl.provider.auth.userName }}</b>
+    </a>
+  </div>
+</div>

@@ -3,9 +3,9 @@ part of bullet.client.decorators;
 @Decorator(
     selector: 'a[push-href]',
     map: const {'push-href': '@href'})
-class Link {
+class PushHref {
 
-  final dom.Element element;
+  final DOM.Element element;
   final NgElement ngElement;
   final NgRoutingUsePushState routing;
   final RouteProvider rp;
@@ -25,7 +25,7 @@ class Link {
     ? url
     : rp.route.path.reverse(tail: url);
 
-  Link(this.element, this.ngElement, this.routing, this.router, this.rp, VmTurnZone zone) {
+  PushHref(this.element, this.ngElement, this.routing, this.router, this.rp, VmTurnZone zone) {
     zone.runOutsideAngular(() {
       if (routing.usePushState) {
         element.onClick.listen((event) {

@@ -7,10 +7,15 @@
   <link rel="stylesheet" href="/css/bullet.css">
   <title>Bullet</title>
 </head>
-<body>
+<body ng-style="{ 'background-color' : user.color }">
 
-<navbar></navbar>
-<ng-view></ng-view>
+<nav>
+  <navbar></navbar>
+</nav>
+
+<main>
+  <ng-view></ng-view>
+</main>
 
 <script src="/packages/shadow_dom/shadow_dom.min.js"></script>
 <script type="application/dart" src="/main.dart"></script>

@@ -18,9 +18,9 @@ Object convertJsObject(JsObject js) =>
 class JavaScriptLibrary {
 
   bool _initialized = false;
-  String _SDK;
-  String scriptUri;
-  String _callbackParam;
+  final String _SDK;
+  final String scriptUri;
+  final String _callbackParam;
 
   bool get isInitialized => _initialized;
   JsObject get SDK => context[_SDK];

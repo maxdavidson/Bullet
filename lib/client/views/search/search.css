@@ -1,0 +1,115 @@
+.searcher input[type=text] {
+  transition: 100ms ease-in-out all;
+  outline: none;
+
+  width: 100%;
+  margin: 0 auto 15px auto;
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1);
+  font-size: 1.5em;
+  height: 2em;
+  border: 0;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius:  0;
+}
+
+.searcher input[type=text]:focus {
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1), 0 0 15px rgba(50, 50, 50, 0.5);
+}
+
+.searcher:before,
+.searcher:after {
+  content:"";
+  display:table;
+}
+.searcher:after {
+  clear:both;
+}
+
+.icons {
+  float:left;
+  background-color: rgba(255,255,255,0.7);
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1);
+  margin: 0 10px 10px 0;
+  cursor: pointer;
+}
+
+.icons * {
+  transition: 100ms ease-in-out all;
+  background-color: rgba(255,255,255,0.0);
+}
+
+.icons > * {
+  float: left;
+  padding: 5px;
+}
+
+.right {
+  float: right;
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.icons .selected {
+  background-color: rgba(255,255,255,0.8);
+}
+
+.icons > *:hover {
+  background-color: rgba(255,255,255,0.9);
+}
+
+
+.icons img {
+  display: block;
+  height: 40px;
+  width: 40px;
+}
+
+#ordering img {
+  -webkit-transform: rotateZ(-90deg);
+  transform: rotateZ(-90deg);
+}
+
+#ordering .flip {
+  -webkit-transform: rotateZ(90deg);
+  transform: rotateZ(90deg);
+}
+
+
+.ads {
+  -webkit-perspective: 500px;
+  perpective: 500px;
+}
+
+ad.ng-enter,
+ad.ng-leave {
+  -webkit-transition: 600ms ease-in-out all;
+  -moz-transition: 600ms ease-in-out all;
+  -ms-transition: 600ms ease-in-out all;
+  -o-transition: 600ms ease-in-out all;
+  transition: 600ms ease-in-out all;
+  position: relative;
+  display: block;
+}
+
+ad.ng-leave.ng-leave-active,
+ad.ng-enter {
+  -webkit-transform: rotateX(45deg);
+  -moz-transform: rotateX(45deg);
+  -ms-transform: rotateX(45deg);
+  -o-transform: rotateX(45deg);
+  transform: rotateX(45deg);
+  height: 0;
+  opacity: 0;
+}
+
+ad.ng-enter.ng-enter-active,
+ad.ng-leave {
+  -webkit-transform: rotateX(0deg);
+  -moz-transform: rotateX(0deg);
+  -ms-transform: rotateX(0deg);
+  -o-transform: rotateX(0deg);
+  transform: rotateX(0deg);
+  height: 90px;
+  opacity: 1;
+}

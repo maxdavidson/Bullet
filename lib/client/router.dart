@@ -1,31 +1,48 @@
 library bullet.client.router;
 
-import 'package:angular/angular.dart';
 import 'dart:async';
+import 'package:angular/angular.dart';
+import 'package:bullet/client/services/authenticator/client.dart';
 
-void routeInitializer(Router router, RouteViewFactory views) =>
-  views.configure({
-    'default': ngRoute(
-      defaultRoute: true,
-      enter: (RouteEnterEvent e) => router.go('home', {}, replace: false)),
-    'home': ngRoute(
-      path: '/',
-      viewHtml: '<home-view></home-view>'),
-    'find': ngRoute(
-      path: '/find/:query',
-      viewHtml: '<home-view></home-view>',
-      preEnter: (RoutePreEnterEvent e) {
-        var query = e.parameters['query'] as String;
-        if (query.isEmpty)
-          router.go('home', {}, replace: true);
-      }),
-    'ad': ngRoute(
-      path: '/ad/:adId',
-      viewHtml: '<ad-view></ad-view>'),
-    'login': ngRoute(
-      path: '/login',
-      viewHtml: '<login-view></login-view>'),
-    'user': ngRoute(
-      path: '/user/:userId',
-      viewHtml: '<profile-view><profile-view>')
-  });
+Function preventEnter(Injector inj, Router router, {bool whenLoggedIn: false}) =>
+  (RouteEvent e) {
+    if (inj.get(ClientAuthenticatorProvider).isLoggedIn == whenLoggedIn)
+      router.go('default', {}, replace: false);
+  };
+
+String titleBuilder([String page]) => (page == null) ? 'Bullet' : '$page | Bullet';
+
+Function setTitle([String page]) {}
+
+/**
+ * Need to do some funky closure stuff to get a reference to the injector
+ */
+RouteInitializerFn routeInitializerFactory(Injector inj) =>
+  (Router router, RouteViewFactory views) =>
+    views.configure({
+      'default': ngRoute(
+        defaultRoute: true,
+        enter: (RouteEnterEvent e) => router.go('search', {}, replace: false)),
+      'search': ngRoute(
+        path: '/search',
+        mount: {
+          'find': ngRoute(
+            defaultRoute: true,
+            path: '/:query',
+            viewHtml: '<search-view></search-view>'),
+        }),
+      'ad': ngRoute(
+        path: '/ad/:adId',
+        viewHtml: '<ad-view></ad-view>'),
+      'new': ngRoute(
+        path: '/new',
+        preEnter: preventEnter(inj, router),
+        viewHtml: '<create-ad-view></create-ad-view>'),
+      'login': ngRoute(
+        path: '/login',
+        preEnter: preventEnter(inj, router, whenLoggedIn: true),
+        viewHtml: '<login-view></login-view>'),
+      'profile': ngRoute(
+        path: '/profile/:userId',
+        viewHtml: '<profile-view></profile-view>')
+    });

@@ -1,4 +1,21 @@
-<h2>Login</h2>
+<div ng-switch="ctrl.isLoading">
+  <loader class="fade" ng-switch-when="true"></loader>
 
-<button ng-disabled="!ctrl.FB.isInitialized || ctrl.provider.isLoggedIn" ng-click="ctrl.fbLogin()">Login with Facebook</button>
-<button ng-disabled="!ctrl.GOO.isInitialized || ctrl.provider.isLoggedIn" ng-click="ctrl.gooLogin()">Login with Google</button>
+  <div class="login-view fade" ng-switch-when="false">
+
+    <h2>Login</h2>
+    <p>Login using one of the methods below. Bullet will never post anything in your behalf.</p>
+
+    <div class="logins">
+      <div class="login" ng-class="{ disabled: !ctrl.FB.isInitialized }" ng-click="ctrl.fbLogin()">
+        <div class="image"><img src="/packages/bullet/client/views/login/facebook.svg"></div>
+        <div class="description">Facebook </div>
+      </div>
+      <div class="login" ng-class="{ disabled: !ctrl.GOO.isInitialized }" ng-click="ctrl.gooLogin()">
+        <div class="image"><img src="/packages/bullet/client/views/login/google.svg"></div>
+        <div class="description">Google+</div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -33,15 +33,13 @@ class WebSocketConnectorClient implements ConnectorClient {
     return _ws;
   }
 
-  Future get onOpen =>
-    (ws.readyState == WebSocket.OPEN)
-      ? new Future.sync(() => null)
-      : ws.onOpen.first;
+  Future get onOpen => (ws.readyState == WebSocket.OPEN) ? new Future.microtask(() => null) : ws.onOpen.first;
 
   void _initInput() {
     input = new StreamRouter<ConnectorEvent>(
       ws.onMessage
          .map((MessageEvent event) => event.data)
+         //.map((json) { print('Received: $json'); return json; })
          .transform(CONNECTOREVENT.decoder));
   }
 
@@ -55,40 +53,41 @@ class WebSocketConnectorClient implements ConnectorClient {
     output = new StreamController<ConnectorEvent>()
       ..stream
         .transform(CONNECTOREVENT.encoder)
-        .forEach((data) => onOpen.then((_) => ws.send(data)));
+        //.map((json) { print('Sent: $json'); return json; })
+        .asyncMap((data) => onOpen.then((_) => data))
+        .forEach((data) => ws.send(data));
   }
 
   /**
    * Calls the remote procedure [identifier] with the optional data [data].
    * Returns a stream of the JSON-parsed result.
    */
-  Stream subscribe(String identifier, [data]) {
-    var request = new ConnectorEvent(ConnectorEvent.CALL, event: identifier, payload: data);
+  Stream subscribe(String identifier, [List args, Map kwargs]) {
+    var request = new ConnectorEvent(ConnectorEvent.CALL, event: identifier, args: args, kwargs: kwargs);
     bool lock = false;
 
-    var controller = new StreamController(
+    var controller = new StreamController<dynamic>(
       onListen: () => output.add(request),
-      onCancel: () {
-        if (lock) 
-          lock = false;
-        else 
-          output.add(new ConnectorEvent(ConnectorEvent.CANCEL, id: request.id));
-      },
       onPause:  () => output.add(new ConnectorEvent(ConnectorEvent.PAUSE, id: request.id)),
-      onResume: () => output.add(new ConnectorEvent(ConnectorEvent.RESUME, id: request.id))
+      onResume: () => output.add(new ConnectorEvent(ConnectorEvent.RESUME, id: request.id)),
+      onCancel: () { if (lock) lock = false; else output.add(new ConnectorEvent(ConnectorEvent.CANCEL, id: request.id)); }
     );
 
+    var pubsub = new PubSub()
+      ..on(ConnectorEvent.EVENT, (event, sink) => sink.add(event.args[0]))
+      ..on(ConnectorEvent.ERROR, (event, sink) => sink.addError(event.args[0]))
+      ..on(ConnectorEvent.END, (event, sink) { sink.close(); lock = true; });
+    
     input
       .route((response) => response.id == request.id)
-      .transform(ConnectorEvent.handleEvents(
-        onError: (event, sink) { controller.addError(event.payload); },
-        onEnd:   (event, sink) { controller.close(); lock = true; },
-        onEvent: (event, sink) { controller.add(event.payload); }
-      ))
-      .drain();
+      .transform(new StreamTransformer<ConnectorEvent, dynamic>.fromHandlers(
+        handleData: (ConnectorEvent event, EventSink<ConnectorEvent> sink) =>
+          pubsub.trigger(event.type, [event, sink])))
+      .pipe(controller);
 
     return controller.stream;
   }
+
 
   /**
    * Ping the server.

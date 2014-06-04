@@ -1,0 +1,49 @@
+.create-ad-view input,
+.create-ad-view textarea,
+.create-ad-view button {
+  transition: 100ms ease-in-out all;
+  outline: none;
+
+  width: 100%;
+  margin: 0 auto 15px auto;
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1);
+  font-size: 1.5em;
+  border: 0;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius:  0;
+}
+
+.create-ad-view input:focus,
+.create-ad-view textarea:focus {
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1), 0 0 15px rgba(50, 50, 50, 0.5);
+}
+
+.create-ad-view form .ng-dirty.ng-invalid {
+  box-shadow: 0 10px 0 -5px rgba(50, 50, 50, 0.1), 0 0 10px rgba(255, 0, 0, 0.5);
+  border: 1px solid red;
+  border-radius: 2px;
+}
+
+.create-ad-view input {
+  height: 2em;
+}
+
+.create-ad-view textarea {
+  resize: none;
+  height: 5.5em;
+}
+
+.create-ad-view button {
+  width: inherit;
+  background-color: rgba(255,255,255,0.7);
+  margin: 0 10px 10px 0;
+}
+
+.create-ad-view button:hover {
+  background-color: rgba(255,255,255,0.8);
+}
+
+.create-ad-view button:active {
+  background-color: rgba(255,255,255,0.6);
+}

@@ -26,17 +26,30 @@ class ConnectorProxyDatabase implements Database {
 
   Map get _config => authenticator == null ? null : authenticator.config;
 
-  ConnectorProxyDatabase(this.provider, this.connector);
+  const ConnectorProxyDatabase(this.provider, this.connector);
 
-  Stream<Map> find(String collection, {Map query, List<String> projection, bool live: false}) =>
-    connector.subscribe('$prefix:find', [collection, query, projection, live, _config]);
+  Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata}) {
+    var kwargs = {
+      'query': query,
+      'fields': fields,
+      'orderBy': orderBy,
+      'limit': limit,
+      'skip': skip,
+      'live': live,
+      'metadata': metadata == null ? _config : metadata
+    };
 
-  Future<Map> insert(String collection, Map object) =>
-    connector.subscribe('$prefix:insert', [collection, object, _config]).first;
+    bool exists(value) => value != null;
+    kwargs = new Map.fromIterables(kwargs.keys.where((key) => exists(kwargs[key])), kwargs.values.where(exists));
+    return connector.subscribe('$prefix:find', [collection], kwargs);
+  }
 
-  Future update(String collection, Map object) =>
-    connector.subscribe('$prefix:update', [collection, object, _config]).first;
+  Future<Map> insert(String collection, Map object, {Object metadata}) =>
+    connector.subscribe('$prefix:insert', [collection, object], { 'metadata': metadata == null ? _config : metadata }).first;
 
-  Future<bool> delete(String collection, Map object) =>
-    connector.subscribe('$prefix:delete', [collection, object, _config]).first;
+  Future update(String collection, Map object, {Object metadata}) =>
+    connector.subscribe('$prefix:update', [collection, object], { 'metadata': metadata == null ? _config : metadata }).first;
+
+  Future<bool> delete(String collection, Map object, {Object metadata}) =>
+    connector.subscribe('$prefix:delete', [collection, object], { 'metadata': metadata == null ? _config : metadata }).first;
 }

@@ -11,9 +11,9 @@ import 'package:bullet/shared/authenticator/authenticator.dart';
 typedef ServerAuthenticator AuthFactoryFn(Map config);
 
 /**
- * Factory functions for specific keys
+ * Factory functions for specific keys. Not pretty...
  */
-var _factories = <String, AuthFactoryFn> {
+final _factories = <String, AuthFactoryFn> {
   'FB': (Map config) => new FacebookServerAuthenticator.fromConfig(config),
   'GO': (Map config) => new GoogleServerAuthenticator.fromConfig(config)
 };
@@ -23,23 +23,25 @@ var _factories = <String, AuthFactoryFn> {
  */
 abstract class ServerAuthenticator extends Authenticator {
 
-  static final _instances = <String, ServerAuthenticator> {};
+  static final _instances = new Map<String, ServerAuthenticator>();
 
-  ServerAuthenticator();
-  ServerAuthenticator.fromConfig(Map config);
+  const ServerAuthenticator();
+  const ServerAuthenticator.fromConfig(Map config);
 
   factory ServerAuthenticator.fromJson(Map json) {
+    String type = json['type'];
+
     if (json == null)
       throw 'Must supply config map';
     if (!json.containsKey('type'))
       throw 'Config map does not define type';
-   if (!_factories.containsKey(json['type']))
+    if (!_factories.containsKey(type))
       throw 'No authenticator defined for type';
 
-    if (_instances.containsKey(json['type']) && !_instances[json['type']].hasExpired)
-      return _instances[json['type']];
-    else
-      return _instances[json['type']] = _factories[json['type']](json['config']);
+    if (!_instances.containsKey(type) || _instances[type] == null || _instances[type].hasExpired)
+      _instances[type] = _factories[type](json['config']);
+
+    return _instances[type];
   }
 
 }
@@ -70,30 +72,41 @@ class FacebookServerAuthenticator extends OAuth2Authenticator {
   final String _accessToken;
   final DateTime _expiresAt;
   final Map _config;
-  
+  Map _cachedResponse;
+
   @override
   String get userId => _userId;
+
+  @override
+  String get type => 'FB';
 
   @override
   bool get hasExpired => _expiresAt.compareTo(new DateTime.now()) < 0;
 
   Map get config => _config;
-  
-  FacebookServerAuthenticator.fromConfig(Map config) : super(_appId, _appSecret),
-    _config = config,
-    _userId = config['userId'],
-    _accessToken = config['accessToken'],
-    _expiresAt = new DateTime.now().add(new Duration(seconds: config['expiresAt']));
 
   @override
-  Future<Map> authenticate() =>
-    createClient(_accessToken)
-      .get('$host/me')
-      .then((response) {
-        if (response.statusCode != 200) throw 'Failed';
-        if (hasExpired) throw 'Authenticator has expired';
-        return JSON.decode(response.body);
-      });
+  String get userName => _cachedResponse == null ? null : _cachedResponse['name'];
+
+  @override
+  String get email => _cachedResponse == null ? null : _cachedResponse['email'];
+
+  FacebookServerAuthenticator.fromConfig(Map config) : super(_appId, _appSecret),
+    _config = config,
+    _userId = config['userID'],
+    _accessToken = config['accessToken'],
+    _expiresAt = new DateTime.now().add(new Duration(seconds: config['expiresIn']));
+
+  @override
+  Future<Map> authenticate() => _cachedResponse != null && !hasExpired
+    ? new Future.value(_cachedResponse)
+    : createClient(_accessToken)
+        .get('$host/me')
+        .then((response) {
+          if (response.statusCode != 200) throw 'Failed';
+          if (hasExpired) throw 'Authenticator has expired';
+          return _cachedResponse = JSON.decode(response.body);
+        });
 }
 
 class GoogleServerAuthenticator extends OAuth2Authenticator {
@@ -107,10 +120,20 @@ class GoogleServerAuthenticator extends OAuth2Authenticator {
   String _userId;
   Map _config;
   Map _cachedResponse;
-  bool _hasAuthenticated = false;
-  
+
+  @override
+  String get userName => _cachedResponse == null ? null : _cachedResponse['displayName'];
+
+  @override
+  String get email => _cachedResponse == null || !_cachedResponse.containsKey('emails')
+    ? null
+    : _cachedResponse['emails'].firstWhere((Map email) => email['type'] == 'account')['value'];
+
   @override
   String get userId => _userId;
+
+  @override
+  String get type => 'GO';
 
   @override
   bool get hasExpired => _expiresAt.compareTo(new DateTime.now()) < 0;
@@ -124,16 +147,18 @@ class GoogleServerAuthenticator extends OAuth2Authenticator {
     _expiresAt = new DateTime.now().add(new Duration(seconds: int.parse(config['expires_at'])));
   
   @override
-  Future<Map> authenticate() => _hasAuthenticated && !hasExpired
+  Future<Map> authenticate() => _cachedResponse != null && !hasExpired
     ? new Future.value(_cachedResponse)
     : createClient(_accessToken)
         .get('$host/plus/v1/people/me')
         .then((httpResponse) {
-          var response = _cachedResponse = JSON.decode(httpResponse.body);
-          _hasAuthenticated = true;
-          _userId = response['id'];
-          if (response.statusCode != 200) throw 'Failed';
+          var response = JSON.decode(httpResponse.body);
+          //print('Google auth response: $response');
+          if (httpResponse.statusCode != 200) throw 'Failed';
           if (hasExpired) throw 'Authenticator has expired';
+          //print(response);
+          _cachedResponse = response;
+          _userId = response['id'];
           return response;
         });
 }

@@ -10,18 +10,16 @@ import 'package:mongo_dart_query/mongo_dart_query.dart';
 
 import 'package:bullet/client/services/authenticator/client.dart';
 import 'package:bullet/client/services/database/entities.dart';
-import 'package:bullet/shared/stream_helpers.dart';
+import 'package:bullet/shared/helpers.dart';
 
 part 'navbar/navbar.dart';
-part 'adset/adset.dart';
 part 'ad/ad.dart';
-part 'searcher/searcher.dart';
+part 'loader/loader.dart';
 
 class ComponentModule extends Module {
   ComponentModule() {
     bind(NavbarComponenent);
-    bind(AdsetComponent);
     bind(AdComponent);
-    bind(SearchComponent);
+    bind(LoaderComponent);
   }
 }

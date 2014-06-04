@@ -1,1 +1,16 @@
-Title: {{ ctrl.ad.title }}
+<div ng-switch="ctrl.isLoading">
+  <loader class="fade" ng-switch-when="true"></loader>
+
+  <div class="ad-view fade" ng-switch-when="false">
+
+    <h2>{{ ctrl.ad.title }}</h2>
+    <h3>{{ ctrl.ad.price | currency : ' kr' : false }}</h3>
+    <p><em>{{ ctrl.ad.description }}</em></p>
+
+    <!--
+    <h4>User</h4>
+    <p><a push-href="/profile/{{ ctrl.user.id }}">{{ ctrl.user.userName }}</a></p>
+    -->
+
+  </div>
+</div>

@@ -1,0 +1,25 @@
+loader {
+  position: absolute;
+  width: 100%;
+}
+
+h1, h2 {
+  margin-top: 0;
+  font-style: italic;
+}
+
+.fade.ng-enter,
+.fade.ng-leave {
+  -webkit-transition: 400ms ease-in-out all;
+  transition: 400ms ease-in-out all;
+}
+
+.fade.ng-leave.ng-leave-active,
+.fade.ng-enter {
+  opacity: 0;
+}
+
+.fade.ng-enter.ng-enter-active,
+.fade.ng-leave {
+  opacity: 1;
+}
