@@ -3,6 +3,8 @@ library bullet.authenticator.google;
 import '../client.dart';
 export '../client.dart';
 
+import 'package:bullet/shared/helpers.dart';
+
 import 'js_sdk.dart';
 import 'dart:async';
 import 'dart:js';
@@ -29,10 +31,14 @@ class GoogleSDK extends JavaScriptLibrary {
       scriptUri: 'https://apis.google.com/js/client:plusone.js',
       callbackParam: 'onload');
 
+  Future _sdkLoaded;
   Future _loadPlusSDK() {
-    var completer = new Completer<Map>();
-    SDK['client'].callMethod('load', ['plus', 'v1', completer.complete]);
-    return completer.future;
+    if (_sdkLoaded == null) {
+      var completer = new Completer<Map>();
+      SDK['client'].callMethod('load', ['plus', 'v1', completer.complete]);
+      _sdkLoaded = completer.future.catchError((_) => _sdkLoaded == null);
+    }
+    return _sdkLoaded;
   }
   
   Future<Map> signIn({Iterable<String> scope: const []}) {
@@ -42,21 +48,22 @@ class GoogleSDK extends JavaScriptLibrary {
       new JsObject.jsify({
         'clientid': clientId,
         'cookiepolicy': 'single_host_origin',
-        'callback': _callOnce(completer.complete)//'monkeyButt',
+        'callback': _callOnce(completer.complete)
       })
     ]);
     return completer.future
-      .then((JsObject obj) => _loadPlusSDK().then((_) => obj))
+      //.then((JsObject obj) => _loadPlusSDK().then((_) => obj))
       .then(convertJsObject);
   }
 
-  Future<Map> getUserInfo({userId: 'me'}) {
-    var completer = new Completer();
-    SDK['client']['plus']['people']
-      .callMethod('get', [new JsObject.jsify({ 'userId': userId })])
-      .callMethod('execute', [(response, _) => completer.complete(response)]);
-    return completer.future.then(convertJsObject);
-  }
+  Future<Map> getUserInfo({userId: 'me'}) => _loadPlusSDK()
+    .then((_) {
+      var completer = new Completer();
+      SDK['client']['plus']['people']
+        .callMethod('get', [new JsObject.jsify({ 'userId': userId })])
+        .callMethod('execute', [(response, _) => completer.complete(response)]);
+      return completer.future.then(convertJsObject);
+    });
 
   void signOut() => SDK['auth'].callMethod('signOut', []);
 
@@ -102,15 +109,14 @@ class GoogleClientAuthenticator extends ClientAuthenticator {
   Future init() => (_init != null) ? _init : _init = GOO.init();
 
   @override
-  Future login() =>
-    GOO.signIn(scope: ['email', 'profile'])
-       .then((response) {
-         var expiresIn = int.parse(response['expires_in']);
-         _expiresAt = new DateTime.now().add(new Duration(seconds: expiresIn));
-         _config = response;
-         return response;
-       })
-       .then((_) => authenticate());
+  Future login() => GOO.signIn(scope: ['email', 'profile'])
+    .then((response) {
+       var expiresIn = int.parse(response['expires_in']);
+       _expiresAt = new DateTime.now().add(new Duration(seconds: expiresIn));
+       _config = response;
+       return response;
+     })
+     .then((_) => authenticate());
 
   @override
   Future logout() => new Future(GOO.signOut);

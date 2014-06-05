@@ -12,10 +12,13 @@ import 'package:bullet/server/database/mongodb.dart';
 import 'package:bullet/server/database/server.dart';
 
 
+const HOME = '../web';
+//const HOME = '../build/web';
+
 /**
  * The main database implementation
  */
-final Database database = new MongoDb(new Db('mongodb://localhost/bullet'));
+final Database database = new MongoDb(new Db('mongodb://127.0.0.1/bullet'));
 
 final userState = new Map<String, Future<Map>>();
 
@@ -114,7 +117,7 @@ void main(List<String> args) {
   /**
    * Create the web server
    */
-  var server = new StreamServer(homeDir: '../web');
+  var server = new StreamServer(homeDir: HOME);
 
   /**
    * Bind websocket to path and start server in push-state mode,

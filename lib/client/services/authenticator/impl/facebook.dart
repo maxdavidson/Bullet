@@ -114,20 +114,19 @@ class FacebookClientAuthenticator extends ClientAuthenticator {
   Future init() => (_init != null) ? _init : _init = FB.init();
 
   @override
-  Future login() => FB.login(scope: ['email'])
-/*    FB.getLoginStatus()
-      .catchError((_) => FB.login(scope: ['email']))*/
-      .then((response) {
-        var authResponse = response['authResponse'];
-        _expiresAt = new DateTime.now().add(new Duration(seconds: authResponse['expiresIn']));
-
-        return FB.getUserInfo()
-          .then((Map info) => _userInfo = info).then(print)
-          .then((_) => authResponse);
+  Future login() => authenticate()
+    .then((Map response) { if (response['status'] != 'connected') throw 'Not logged in'; return response; })
+    .catchError((_) => FB.login(scope: ['email']))
+    .then((Map response) {
+       var authResponse = response['authResponse'];
+      _expiresAt = new DateTime.now().add(new Duration(seconds: authResponse['expiresIn']));
+      return FB.getUserInfo()
+        .then((Map info) => _userInfo = info)
+        .then(print)
+        .then((_) => authResponse);
       });
 
-  // TODO
   @override
-  Future logout();
+  Future logout() => FB.logout();
 
 }

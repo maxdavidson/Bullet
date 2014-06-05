@@ -1,9 +1,8 @@
 name: bullet
-version: 0.6.0
+version: 0.7.0
 dependencies:
   browser: any
   angular: '>= 0.11.0'
-  unittest: any
   stream: any
   mongo_dart: any
   oauth2: any
@@ -12,6 +11,8 @@ dependencies:
   jwt: any
   quiver: any
   intl: any
+dev_dependencies:
+  unittest: any
 dependency_overrides:
   angular: '>= 0.11.0'
     #path: '../angular.dart/'
@@ -19,10 +20,10 @@ transformers:
 - angular:
     html_files:
     - lib/client/components/ad/ad.html
-    - lib/client/components/navbar/navbar.html
     - lib/client/components/loader/loader.html
-    - lib/client/views/search/search.html
-    - lib/client/views/login/login.html
+    - lib/client/components/navbar/navbar.html
     - lib/client/views/ad/ad.html
     - lib/client/views/create-ad/create-ad.html
+    - lib/client/views/login/login.html
     - lib/client/views/profile/profile.html
+    - lib/client/views/search/search.html

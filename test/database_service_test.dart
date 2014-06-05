@@ -149,7 +149,7 @@ void main() {
     group('EntityMapper', () {
       EntityMapper<Person> people;
 
-      setUp(() => people = new PersonMapper(db));
+      setUp(() => people = new UserMapper(db));
       tearDown(() => people = null);
 
       test('Cancelling stream right away', () =>

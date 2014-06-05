@@ -1,15 +1,12 @@
 library bullet.common.database.mongodb;
 
 import 'dart:async';
-import 'dart:convert' show JSON;
 
 import 'package:mongo_dart/mongo_dart.dart';
-import 'package:stream_ext/stream_ext.dart';
 
 import 'package:bullet/shared/helpers.dart';
 import 'package:bullet/shared/database/database.dart';
 export 'package:bullet/shared/database/database.dart';
-import 'package:bullet/server/authenticator/server.dart';
 
 /*
 // { 'title': { r'$regex': query, r'$options': 'i' }

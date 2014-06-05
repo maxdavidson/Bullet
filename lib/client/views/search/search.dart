@@ -59,7 +59,7 @@ class SearchView implements AttachAware, DetachAware {
   get paused => subscription.isPaused;
 
   void increaseLimit() { limit++; queries.add(true); }
-  void resetLimit() => limit = 8;
+  void resetLimit() { limit = 8; }
 
   void runQuery({ bool findMore: false}) {
     if (subscription != null) subscription.cancel();
