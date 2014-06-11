@@ -33,7 +33,6 @@
   width: .5em;
   height: 1.5em;
   border-radius: .2em;
-  /*background: #eee;*/
   background-color: rgba(255,255,255,0.9);
   box-shadow: 0 3.5em rgba(255,255,255,0.9); /* container height - part height */
   -webkit-transform-origin: 50% 2.5em; /* container height / 2 */

@@ -46,6 +46,7 @@ class UserMapper extends EntityMapper<User> {
 
   final ClientAuthenticatorProvider provider;
   final RootScope rootScope;
+
   Future<User> _me;
 
   UserMapper(Database db, this.provider, this.rootScope) : super('users', db, builder: () => new User());
@@ -70,5 +71,9 @@ class EntityModule extends Module {
   EntityModule() {
     bind(AdMapper);
     bind(UserMapper);
+    
+    // Hack to inject generic versions. Simply bind(EntityMapper<Ad>, ...) is illegal syntax...
+    bind((new EntityMapper<Ad>(null, null)).runtimeType, toImplementation: AdMapper);
+    bind((new EntityMapper<User>(null, null)).runtimeType, toImplementation: UserMapper);
   }
 }

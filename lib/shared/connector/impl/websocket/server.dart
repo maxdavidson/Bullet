@@ -61,7 +61,7 @@ class WebSocketConnectorServer implements ConnectorServer<WebSocket> {
           ..on(ConnectorEvent.RESUME, subscription == null ? noOp : subscription.resume)
           ..on(ConnectorEvent.CANCEL, subscription == null ? noOp : subscription.cancel)
           ..on(ConnectorEvent.CALL, () {
-            var kwargs = new Map.fromIterables(event.kwargs.keys.map((key) => new Symbol(key)), event.kwargs.values);
+            var kwargs = new Map.fromIterables(event.kvargs.keys.map((key) => new Symbol(key)), event.kvargs.values);
             var result = Function.apply(handlers[event.event], event.args, kwargs);
             var stream = convertToStream(result).map((value) => new ConnectorEvent.fromEvent(event, type: ConnectorEvent.EVENT, args: [value]));
 

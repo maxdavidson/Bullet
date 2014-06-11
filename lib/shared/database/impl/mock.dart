@@ -54,7 +54,7 @@ class MockDatabase implements Database {
 
     Map project(Map object) =>
       object.keys
-        .where((key) => (projection == null) || projection.contains(key))
+        .where((key) => (fields == null) || fields.contains(key))
         .fold({}, (newObject, key) => newObject..[key] = object[key]);
 
     var stream = new Stream<Map>.fromIterable(data[collection].where(criteriaTest).map(project));

@@ -62,8 +62,8 @@ class WebSocketConnectorClient implements ConnectorClient {
    * Calls the remote procedure [identifier] with the optional data [data].
    * Returns a stream of the JSON-parsed result.
    */
-  Stream subscribe(String identifier, [List args, Map kwargs]) {
-    var request = new ConnectorEvent(ConnectorEvent.CALL, event: identifier, args: args, kwargs: kwargs);
+  Stream subscribe(String identifier, [List args, Map kvargs]) {
+    var request = new ConnectorEvent(ConnectorEvent.CALL, event: identifier, args: args, kvargs: kvargs);
     bool lock = false;
 
     var controller = new StreamController<dynamic>(

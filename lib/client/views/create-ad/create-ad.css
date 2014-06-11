@@ -1,6 +1,8 @@
 .create-ad-view input,
 .create-ad-view textarea,
 .create-ad-view button {
+  -webkit-transition: 100ms ease-in-out all;
+  -ms-transition: 100ms ease-in-out all;
   transition: 100ms ease-in-out all;
   outline: none;
 

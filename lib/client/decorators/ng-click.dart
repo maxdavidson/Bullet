@@ -3,6 +3,8 @@ part of bullet.client.decorators;
 /**
  * Port of ngTouch's version of ngClick to trigger click events using touch events,
  * thereby preventing the 300ms delay.
+ *
+ * Not working yet...
  */
 @Decorator(
     selector: '[ng-click]',
@@ -113,7 +115,7 @@ class NgClick {
    * Global click handler that prevents the click if it's in a bustable zone and preventGhostClick was called recently.
    */
   void handleClick(DOM.MouseEvent event) {
-    if (new DateTime.now().subtract(lastPreventedTime).compareTo(PREVENT_DURATION) > 0)
+    if (new DateTime.now().compareTo(lastPreventedTime.subtract(PREVENT_DURATION)) > 0)
       return; // Too old.
 
     DOM.Point click = event.client;

@@ -10,9 +10,7 @@
 .login {
   background-color: rgba(255, 255, 255, 0.7);
   -webkit-transition: 200ms ease all;
-  -moz-transition: 200ms ease all;
   -ms-transition: 200ms ease all;
-  -o-transition: 200ms ease all;
   transition: 200ms ease all;
   padding: 5px;
 }

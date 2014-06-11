@@ -17,7 +17,7 @@ class CreateAdView {
   bool _isLoading = false;
   bool get isLoading => _isLoading && user == null;
 
-  CreateAdView(AdMapper ads, UserMapper users, this.router) {
+  CreateAdView(EntityMapper<Ad> ads, EntityMapper<User> users, this.router) {
     ad = ads.create();
     users.get('me').then((User me) => user = me);
   }

@@ -11,7 +11,7 @@ part of bullet.client.views;
 class SearchView implements AttachAware, DetachAware {
 
   final Scope scope;
-  final AdMapper adMapper;
+  final EntityMapper<Ad> adMapper;
   final UserMapper users;
 
   final ClientAuthenticatorProvider provider;
@@ -68,8 +68,6 @@ class SearchView implements AttachAware, DetachAware {
     not(bool f(x)) => (x) => !f(x);
     later(ms) => (x) => new Future.delayed(new Duration(milliseconds: ms), () => x);
     apply(f(x)) => (x) => scope.apply(() => f(x));
-    compose(fns) => (x) => fns.fold(x, (y, fn) => fn(y));
-    sideEffect(fn(x)) => (x) { fn(x); return x; };
 
     subscription = adMapper.find(
         query: { 'title': { r'$regex': query.query, r'$options': 'i' } },
@@ -83,13 +81,14 @@ class SearchView implements AttachAware, DetachAware {
 
   Future saveQuery() {
     if (provider.isLoggedIn)
-      users.get('me').then((User me) {
+      return users.get('me').then((User me) {
         me.queries.add(query.toJson());
         isLoading = true;
         return me.save()
           .then(sideEffect((_) => isLoading = false))
           .then(sideEffect((_) => queryIsSaved = true));
       });
+    return null;
   }
 
   @override

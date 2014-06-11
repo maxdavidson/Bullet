@@ -1,4 +1,6 @@
 .searcher input[type=text] {
+  -webkit-transition: 100ms ease-in-out all;
+  -ms-transition: 100ms ease-in-out all;
   transition: 100ms ease-in-out all;
   outline: none;
 
@@ -35,7 +37,10 @@
 }
 
 .icons * {
+  -webkit-transition: 100ms ease-in-out all;
+  -ms-transition: 100ms ease-in-out all;
   transition: 100ms ease-in-out all;
+
   background-color: rgba(255,255,255,0.0);
 }
 
@@ -67,11 +72,13 @@
 
 #ordering img {
   -webkit-transform: rotateZ(-90deg);
+  -ms-transform: rotateZ(-90deg);
   transform: rotateZ(-90deg);
 }
 
 #ordering .flip {
   -webkit-transform: rotateZ(90deg);
+  -ms-transform: rotateZ(90deg);
   transform: rotateZ(90deg);
 }
 
@@ -84,9 +91,7 @@
 ad.ng-enter,
 ad.ng-leave {
   -webkit-transition: 600ms ease-in-out all;
-  -moz-transition: 600ms ease-in-out all;
   -ms-transition: 600ms ease-in-out all;
-  -o-transition: 600ms ease-in-out all;
   transition: 600ms ease-in-out all;
   position: relative;
   display: block;
@@ -95,9 +100,7 @@ ad.ng-leave {
 ad.ng-leave.ng-leave-active,
 ad.ng-enter {
   -webkit-transform: rotateX(45deg);
-  -moz-transform: rotateX(45deg);
   -ms-transform: rotateX(45deg);
-  -o-transform: rotateX(45deg);
   transform: rotateX(45deg);
   height: 0;
   opacity: 0;
@@ -106,9 +109,7 @@ ad.ng-enter {
 ad.ng-enter.ng-enter-active,
 ad.ng-leave {
   -webkit-transform: rotateX(0deg);
-  -moz-transform: rotateX(0deg);
   -ms-transform: rotateX(0deg);
-  -o-transform: rotateX(0deg);
   transform: rotateX(0deg);
   height: 90px;
   opacity: 1;

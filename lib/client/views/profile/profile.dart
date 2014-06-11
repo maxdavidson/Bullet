@@ -75,7 +75,7 @@ class ProfileView {
   get isLoading => _isLoading || user == null;
   get colors => _colors;
 
-  ProfileView(UserMapper users, RouteProvider rp, Router router, this.provider) {
+  ProfileView(EntityMapper<User> users, RouteProvider rp, Router router, this.provider) {
     new Future(() => users.get(rp.parameters['userId']))
       .then((User profile) => user = profile)
       .catchError((_) => router.go('login', {}));

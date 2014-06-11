@@ -10,9 +10,7 @@ body {
   margin: 0;
 
   -webkit-transition: 600ms ease all;
-  -moz-transition: 600ms ease all;
   -ms-transition: 600ms ease all;
-  -o-transition: 600ms ease all;
   transition: 600ms ease all;
 
   background-color: #0ef;

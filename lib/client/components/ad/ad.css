@@ -1,11 +1,5 @@
-/* Official syntax */
 :host {
   display: block;
-}
-
-/* Old syntax, supported by polyfill */
-@host {
-  * { display: block; }
 }
 
 .ad {

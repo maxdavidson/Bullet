@@ -2,9 +2,6 @@ library bullet.database;
 
 import 'dart:async';
 
-import 'package:bullet/shared/authenticator/authenticator.dart';
-export 'package:bullet/shared/authenticator/authenticator.dart';
-
 
 /**
  * Provides a way to to CRUD operations to a database

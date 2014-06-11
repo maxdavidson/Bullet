@@ -42,19 +42,19 @@ class ConnectorEvent {
   final type;
   final String id, event;
   final List args;
-  final Map kwargs;
+  final Map kvargs;
 
-  ConnectorEvent(this.type, {String id, this.event, this.args: const [], this.kwargs: const {}, bool generateId: true})
+  ConnectorEvent(this.type, {String id, this.event, this.args: const [], this.kvargs: const {}, bool generateId: true})
     : this.id = (id == null && generateId) ? _randomString() : id;
 
-  ConnectorEvent.fromEvent(ConnectorEvent otherEvent, {type, this.args: const [], this.kwargs: const {}})
+  ConnectorEvent.fromEvent(ConnectorEvent otherEvent, {type, this.args: const [], this.kvargs: const {}})
     : event = otherEvent.event, id = otherEvent.id,
       this.type = (type != null) ? type : otherEvent.type;
 
   ConnectorEvent.fromJson(List obj)
-    : type = obj[0], id = obj[1], event = obj[2], args = obj[3], kwargs = obj[4];
+    : type = obj[0], id = obj[1], event = obj[2], args = obj[3], kvargs = obj[4];
 
-  Object toJson() => [type, id, event, args, kwargs];
+  Object toJson() => [type, id, event, args, kvargs];
 
 }
 

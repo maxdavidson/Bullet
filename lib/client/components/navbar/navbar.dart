@@ -12,8 +12,6 @@ class NavbarComponenent {
 
   bool holding = false;
 
-  p() => print('hej');
-
   NavbarComponenent(this.router, this.provider);
 
 }

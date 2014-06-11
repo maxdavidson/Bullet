@@ -10,10 +10,6 @@ Function preventEnter(Injector inj, Router router, {bool whenLoggedIn: false}) =
       router.go('default', {}, replace: false);
   };
 
-String titleBuilder([String page]) => (page == null) ? 'Bullet' : '$page | Bullet';
-
-Function setTitle([String page]) {}
-
 /**
  * Need to do some funky closure stuff to get a reference to the injector
  */

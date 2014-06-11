@@ -20,15 +20,14 @@ import 'services/authenticator/client.dart';
 import 'package:bullet/shared/database/database.dart';
 import 'package:bullet/shared/connector/impl/websocket/client.dart';
 
-import 'dart:html' as dom;
-
 
 class AppModule extends Module {
   AppModule() {
-    //bind(RouteInitializerFn, toValue: routeInitializer);
     bind(RouteInitializerFn, toFactory: routeInitializerFactory);
 
     install(new AnimationModule());
+
+    // This is broken in pub build, must be fixed for infinite scroll to work on mobile
     install(new InfiniteScrollModule());
 
     install(new DecoratorModule());
@@ -42,7 +41,6 @@ class AppModule extends Module {
     bind(ConnectorClient, toFactory: (Injector i) => new WebSocketConnectorClient(pathname: 'api'));
     bind(Database, toImplementation: ConnectorProxyDatabase);
 
-    //bind(dom.Window, toValue: dom.window);
     //bind(NgRoutingUsePushState, toValue: new NgRoutingUsePushState.value(false));
   }
 }

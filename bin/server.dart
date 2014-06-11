@@ -5,18 +5,19 @@ import 'package:stream/stream.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import 'package:bullet/shared/helpers.dart';
+import 'package:bullet/shared/authenticator/authenticator.dart';
 import 'package:bullet/shared/connector/connector.dart';
 import 'package:bullet/shared/connector/impl/websocket/server.dart';
 
-import 'package:bullet/server/database/mongodb.dart';
+import 'package:bullet/server/database/impl/mongodb.dart';
 import 'package:bullet/server/database/server.dart';
-
+import 'package:bullet/server/database/permissions.dart';
 
 const HOME = '../web';
 //const HOME = '../build/web';
 
 /**
- * The main database implementation
+ * The main database implementation.
  */
 final Database database = new MongoDb(new Db('mongodb://127.0.0.1/bullet'));
 
@@ -86,9 +87,9 @@ Map<String, DatabasePermissions> permissions = {
 };
 
 /**
- * The permission-wrapped database
+ * The decorated database
  */
-Database wrappedDatabase = new PermissionsDecorator(database, permissions: permissions);
+Database wrappedDatabase = new PermissionsDecorator(new UpdateDecorator(database), permissions: permissions);
 
 /**
  * Hooks for the API

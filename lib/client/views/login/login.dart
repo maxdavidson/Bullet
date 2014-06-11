@@ -9,16 +9,17 @@ part of bullet.client.views;
         '/packages/bullet/client/views/views.css'])
 class LoginView {
 
-  static ClientAuthenticator _FB, _GOO;
+  static final ClientAuthenticator _FB = new FacebookClientAuthenticator();
+  static final ClientAuthenticator _GOO = new GoogleClientAuthenticator();
 
+  get FB => _FB;
+  get GOO => _GOO;
+  
   final ClientAuthenticatorProvider provider;
   final Router router;
-  final UserMapper users;
+  final EntityMapper<User> users;
 
   String query = '';
-
-  ClientAuthenticator get FB => (_FB == null) ? _FB = new FacebookClientAuthenticator() : _FB;
-  ClientAuthenticator get GOO => (_GOO == null) ? _GOO = new GoogleClientAuthenticator() : _GOO;
 
   bool isLoading = true;
 

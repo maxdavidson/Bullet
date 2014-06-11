@@ -1,6 +1,5 @@
 library bullet.authenticator.server;
 
-import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 
