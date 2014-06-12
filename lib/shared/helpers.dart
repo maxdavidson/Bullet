@@ -89,9 +89,13 @@ StreamTransformer debounce(Duration wait, {bool immediate: false}) {
   var timer, lastEvent;
   return new StreamTransformer.fromHandlers(handleData: (event, EventSink sink) {
     lastEvent = event;
-    if (timer != null && timer.isActive)timer.cancel(); else if (immediate)sink.add(event);
+    if (timer != null && timer.isActive)
+      timer.cancel();
+    else if (immediate)
+      sink.add(event);
     timer = new Timer(wait, () {
-      if (!immediate && lastEvent != null)sink.add(lastEvent);
+      if (!immediate && lastEvent != null)
+        sink.add(lastEvent);
     });
   },
 

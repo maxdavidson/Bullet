@@ -51,7 +51,7 @@ class MongoDb implements Database {
     if (fields != null) cursor.fields = new Map.fromIterable(fields.map(convertField), value: (_) => 1);
 
     // Cursor's default stream implementation is broken... starts right away and doesn't support pause/resume
-    Completer onResume = new Completer.sync()..complete();
+    Completer resumer = new Completer.sync()..complete();
     StreamController<Map> dbController;
 
     // Recursively, asynchronously progress results
@@ -59,7 +59,7 @@ class MongoDb implements Database {
       .then((Map obj) {
         if (cursor.state != Cursor.CLOSED) {
           if (obj != null) dbController.add(obj);
-          return onResume.future.then((_) => progress());
+          return resumer.future.then((_) => progress());
         }
       })
       .catchError(dbController.addError)
@@ -67,8 +67,8 @@ class MongoDb implements Database {
 
     dbController = new StreamController<Map>(
       onListen: () => open().then((_) => progress()),
-      onPause: () => onResume = new Completer(),
-      onResume: onResume.complete,
+      onPause: () => resumer = new Completer(),
+      onResume: () => resumer.complete(), // Need to evaluate lazily, since resumer may change
       onCancel: cursor.close);
 
     return dbController.stream.map(_fixMongoDocument);
