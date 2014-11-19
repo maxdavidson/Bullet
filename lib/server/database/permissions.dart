@@ -15,14 +15,14 @@ abstract class Permission {
 class AllowPermission extends Permission {
   const AllowPermission();
   @override
-  Future<bool> authorize(String concern, Object request, Object metadata) => new Future.sync(() => true);
+  Future<bool> authorize(String concern, Object request, Object metadata) => new Future.value(true);
 }
 
 
 class DenyPermission extends Permission {
   const DenyPermission();
   @override
-  Future<bool> authorize(String concern, Object request, Object metadata) => new Future.sync(() => false);
+  Future<bool> authorize(String concern, Object request, Object metadata) => new Future.value(false);
 }
 
 

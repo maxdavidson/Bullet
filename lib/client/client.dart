@@ -5,7 +5,9 @@ import 'router.dart';
 
 // Plugins
 import 'package:angular/animate/module.dart';
-import 'package:ng_infinite_scroll/ng_infinite_scroll.dart';
+
+import 'package:connector/connector.dart';
+import 'package:connector/websocket.dart';
 
 // Client modules
 import 'components/components.dart';
@@ -18,17 +20,13 @@ import 'services/authenticator/client.dart';
 
 // Shared modules
 import 'package:bullet/shared/database/database.dart';
-import 'package:bullet/shared/connector/impl/websocket/client.dart';
 
 
 class AppModule extends Module {
   AppModule() {
-    bind(RouteInitializerFn, toFactory: routeInitializerFactory);
+    bind(RouteInitializerFn, toFactory: routeInitializerFactory, inject: [Injector]);
 
     install(new AnimationModule());
-
-    // This is broken in pub build, must be fixed for infinite scroll to work on mobile
-    install(new InfiniteScrollModule());
 
     install(new DecoratorModule());
     install(new ComponentModule());
@@ -38,9 +36,10 @@ class AppModule extends Module {
 
     bind(ClientAuthenticatorProvider);
 
-    bind(ConnectorClient, toFactory: (Injector i) => new WebSocketConnectorClient(pathname: 'api'));
+    bind(Connector, toFactory: () => new Connector.fromStringBus(new WebSocketBus(pathname: 'api')));
+
     bind(Database, toImplementation: ConnectorProxyDatabase);
 
-    //bind(NgRoutingUsePushState, toValue: new NgRoutingUsePushState.value(false));
+    bind(NgRoutingUsePushState, toValue: new NgRoutingUsePushState.value(false));
   }
 }

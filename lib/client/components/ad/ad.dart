@@ -1,14 +1,20 @@
-part of bullet.client.components;
+library bullet.client.components.ad;
+
+import 'package:angular/angular.dart';
+
+import 'package:bullet/client/services/database/entities.dart';
+
 
 @Component(
   selector: 'ad',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/components/ad/ad.html',
-  cssUrl: '/packages/bullet/client/components/ad/ad.css',
-  map: const { 'model': '=>!model' })
+  templateUrl: 'ad.html',
+  cssUrl: 'ad.css')
 class AdComponent implements AttachAware, DetachAware {
+
+  final Router router;
+
+  @NgOneWayOneTime('model')
   Ad model;
-  Router router;
 
   AdComponent(this.router);
 

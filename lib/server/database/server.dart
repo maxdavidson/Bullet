@@ -13,7 +13,7 @@ class DatabaseDecorator implements Database {
 
   final Database delegate;
 
-  const DatabaseDecorator(this.delegate);
+  DatabaseDecorator(this.delegate);
 
   @override
   Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata}) =>
@@ -38,7 +38,7 @@ class PermissionsDecorator extends DatabaseDecorator {
 
   final Map<String, DatabasePermissions> permissions;
 
-  const PermissionsDecorator(Database delegate, {this.permissions: const {}}) : super(delegate);
+  PermissionsDecorator(Database delegate, {this.permissions: const {}}) : super(delegate);
 
   void _throwIfNotAuthorized(bool authorized) {
     if (!authorized) throw 'Not authorized!';
@@ -137,7 +137,7 @@ class UpdateDecorator extends DatabaseDecorator {
 
   final updateHandlers = new Set<UpdateHandler>();
   
-  const UpdateDecorator(Database delegate) : super(delegate);
+  UpdateDecorator(Database delegate) : super(delegate);
 
   Future triggerUpdates(String collectionName) {
     print('Updating $collectionName');
@@ -173,9 +173,9 @@ class UpdateDecorator extends DatabaseDecorator {
         dbstream.forEach(updateController.add)
           .then((_) => updateHandler = new UpdateHandler(collection, query, fields, updateController, this))
           .then(updateHandlers.add),
-        onPause: () => (updateHandler == null) ? null : updateHandler.pause(),
-        onResume: () => (updateHandler == null) ? null : updateHandler.resume(),
-        onCancel: () => updateHandlers.remove(updateHandler));
+        onPause: () { if (updateHandler != null) updateHandler.pause(); },
+        onResume: () { if (updateHandler != null) updateHandler.resume(); },
+        onCancel: () { updateHandlers.remove(updateHandler); });
 
     return updateController.stream.map(_fixMongoDocument);
   }

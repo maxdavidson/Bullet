@@ -1,10 +1,13 @@
-part of bullet.client.components;
+library bullet.client.components.navbar;
+
+import 'package:angular/angular.dart';
+import 'package:bullet/client/services/authenticator/client.dart';
+
 
 @Component(
   selector: 'navbar',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/components/navbar/navbar.html',
-  cssUrl: '/packages/bullet/client/components/navbar/navbar.css')
+  templateUrl: 'navbar.html',
+  cssUrl: 'navbar.css')
 class NavbarComponenent {
 
   final Router router;

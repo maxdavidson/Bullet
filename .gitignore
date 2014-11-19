@@ -1,6 +1,8 @@
 .DS_Store
-.idea/
+.idea
 .project
+.pub
+build
 packages
 *.iml
 *.ipr

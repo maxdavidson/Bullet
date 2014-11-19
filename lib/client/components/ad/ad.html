@@ -1,15 +1,15 @@
-  <a class="ad" push-href="/ad/{{ ctrl.model.id }}">
-    <div class="content">
-      <div class="left wrap">
-        <div class="valign">
-          <div class="date">{{ ctrl.model.updated | niceDate }}</div>
-          <div class="title">{{ ctrl.model.title }}</div>
-        </div>
-      </div>
-      <div class="right wrap">
-        <div class="valign">
-          <div class="price">{{ ctrl.model.price | currency : ' kr' : false }}</div>
-        </div>
+<a class="ad" push-href="/ad/{{ model.id }}">
+  <div class="content">
+    <div class="left wrap">
+      <div class="valign">
+        <div class="date">{{ model.updated | niceDate }}</div>
+        <div class="title">{{ model.title }}</div>
       </div>
     </div>
-  </a>
+    <div class="right wrap">
+      <div class="valign">
+        <div class="price">{{ model.price | currency : ' kr' : false }}</div>
+      </div>
+    </div>
+  </div>
+</a>

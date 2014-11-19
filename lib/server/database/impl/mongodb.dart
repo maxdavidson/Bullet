@@ -57,7 +57,7 @@ class MongoDb implements Database {
     // Recursively, asynchronously progress results
     Future progress() => cursor.nextObject()
       .then((Map obj) {
-        if (cursor.state != Cursor.CLOSED) {
+        if (cursor.state != State.CLOSED) {
           if (obj != null) dbController.add(obj);
           return resumer.future.then((_) => progress());
         }

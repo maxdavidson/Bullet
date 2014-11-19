@@ -9,8 +9,7 @@ import 'package:jwt/base64url.dart';
  * Convert a [JsObject] into a native Dart [Object].
  * Works by serializing to JSON in JS and then deserializing with Dart.
  */
-Object convertJsObject(JsObject js) =>
-  JSON.decode(context['JSON'].callMethod('stringify', [js]));
+Object convertJsObject(js) => JSON.decode(context['JSON'].callMethod('stringify', [js]));
 
 /**
  * Wraps a JS library.

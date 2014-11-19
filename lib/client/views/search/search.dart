@@ -1,47 +1,51 @@
-part of bullet.client.views;
+library bullet.client.views.search;
+
+import 'dart:async';
+import 'dart:html' as DOM;
+
+import 'package:angular/angular.dart';
+
+import 'package:bullet/shared/helpers.dart';
+import 'package:bullet/client/services/database/entities.dart';
+import 'package:bullet/client/services/authenticator/client.dart';
 
 
 @Component(
   selector: 'search-view',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/views/search/search.html',
-  cssUrl: const [
-      '/packages/bullet/client/views/search/search.css',
-      '/packages/bullet/client/views/views.css'])
+  templateUrl: 'search.html',
+  cssUrl: const ['search.css','../views.css'])
 class SearchView implements AttachAware, DetachAware {
 
-  final Scope scope;
   final EntityMapper<Ad> adMapper;
-  final UserMapper users;
+  final EntityMapper<User> users;
 
   final ClientAuthenticatorProvider provider;
 
-  final queries = new StreamController();
   final ads = new List<Ad>();
-
-  StreamSubscription<Ad> subscription;
 
   ClientAuthenticator get auth => provider.auth;
   Iterable<Ad> get active_ads => ads.where((ad) => !ad.isPaused);
 
   bool queryIsSaved = false;
   int limit = 8;
-
-  // For the view fading...
   bool isLoading = false;
+  get isLoggedIn => provider.isLoggedIn;
 
-  var query = new Query();
+  final _query = new Query();
 
-  SearchView(this.adMapper, this.users, this.scope, this.provider, RouteProvider route, Router router, DOM.Window window, NgRoutingUsePushState routing) {
+  final queries = new StreamController();
+  String get query => _query.query;
+  String get sortField => _query.sortField;
+  bool get ascending => _query.ascending;
 
-    if (route.parameters.containsKey('query'))
-      query = new Query.fromQueryString(route.parameters['query']);
+  set query(String value) { queries.add(false); _query.query = value; }
+  set sortField(String value) { queries.add(false); _query.sortField = value; }
+  set ascending(bool value) { queries.add(false); _query.ascending = value; }
 
-    addQuery(a,b) => queries.add(false);
-    scope
-      ..watch('ctrl.query.query', addQuery, canChangeModel: false)
-      ..watch('ctrl.query.sortField', addQuery, canChangeModel: false)
-      ..watch('ctrl.query.ascending', addQuery, canChangeModel: false);
+  SearchView(this.adMapper, this.users, this.provider, RouteProvider route, Router router, DOM.Window window, NgRoutingUsePushState routing) {
+
+    // if (route.parameters.containsKey('query'))
+    //  _query = new Query.fromQueryString(route.parameters['query']);
 
     queries.stream
       .transform(debounce(const Duration(milliseconds: 500)))
@@ -50,7 +54,7 @@ class SearchView implements AttachAware, DetachAware {
 
         // Ugly, but need to update url without reloading view, can't do it in router
         if (routing.usePushState)
-          window.history.replaceState(null, window.document.title, '/search/${query.toUri()}');
+          window.history.replaceState(null, window.document.title, '/search/${_query.toUri()}');
 
         runQuery(findMore: findMore);
       });
@@ -58,31 +62,29 @@ class SearchView implements AttachAware, DetachAware {
 
   get paused => subscription.isPaused;
 
-  void increaseLimit() { limit++; queries.add(true); }
-  void resetLimit() { limit = 8; }
+  increaseLimit() { limit++; queries.add(true); }
+  resetLimit() { limit = 8; }
 
-  void runQuery({ bool findMore: false}) {
+  StreamSubscription<Ad> subscription;
+
+  runQuery({ bool findMore: false}) {
     if (subscription != null) subscription.cancel();
     bool queryIsSaved = false;
 
-    not(bool f(x)) => (x) => !f(x);
-    later(ms) => (x) => new Future.delayed(new Duration(milliseconds: ms), () => x);
-    apply(f(x)) => (x) => scope.apply(() => f(x));
-
     subscription = adMapper.find(
-        query: { 'title': { r'$regex': query.query, r'$options': 'i' } },
-        orderBy: { query.sortField: query.ascending ? 1 : -1, 'id': query.ascending ? 1 : -1 },
+        query: { 'title': { r'$regex': query, r'$options': 'i' } },
+        orderBy: { sortField: ascending ? 1 : -1, 'id': ascending ? 1 : -1 },
         skip: findMore ? active_ads.length : null,
         limit: findMore ? 10 : limit,
         live: true)
-      .where(not(ads.contains))
-      .listen((ad) => later(50)(ad).then(apply(ads.add)));
+      .where((ad) => !ads.contains(ad))
+      .listen(ads.add);
   }
 
   Future saveQuery() {
     if (provider.isLoggedIn)
       return users.get('me').then((User me) {
-        me.queries.add(query.toJson());
+        me.queries.add(_query.toJson());
         isLoading = true;
         return me.save()
           .then(sideEffect((_) => isLoading = false))

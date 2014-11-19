@@ -4,8 +4,9 @@ import 'dart:async';
 
 import 'package:angular/angular.dart';
 
+import 'package:connector/connector.dart';
+
 import 'package:bullet/shared/authenticator/authenticator.dart';
-import 'package:bullet/shared/connector/connector.dart';
 import 'package:bullet/shared/database/database.dart';
 export 'package:bullet/shared/database/database.dart';
 
@@ -20,37 +21,37 @@ class ConnectorProxyDatabase implements Database {
 
   static final String prefix = 'db';
 
-  final ConnectorClient connector;
+  final Connector connector;
   final ClientAuthenticatorProvider provider;
 
   Authenticator get authenticator => provider.auth;
 
-  Map get _config => authenticator == null ? null : authenticator.config;
+  Map get _config => (authenticator == null) ? null : authenticator.config;
 
-  const ConnectorProxyDatabase(this.provider, this.connector);
+  ConnectorProxyDatabase(this.provider, this.connector);
 
   Stream<Map> find(String collection, {Map<String, dynamic> query, List<String> fields, Map<String, int> orderBy, int limit, int skip, bool live: false, Object metadata}) {
-    var kvargs = {
+    var kwargs = {
       'query': query,
       'fields': fields,
       'orderBy': orderBy,
       'limit': limit,
       'skip': skip,
       'live': live,
-      'metadata': metadata == null ? _config : metadata
+      'metadata': (metadata == null) ? _config : metadata
     };
 
     bool exists(value) => value != null;
-    kvargs = new Map.fromIterables(kvargs.keys.where((key) => exists(kvargs[key])), kvargs.values.where(exists));
-    return connector.subscribe('$prefix:find', [collection], kvargs);
+    kwargs = new Map.fromIterables(kwargs.keys.where((key) => exists(kwargs[key])), kwargs.values.where(exists));
+    return connector.subscribe('$prefix:find', args: [collection], kwargs: kwargs);
   }
 
   Future<Map> insert(String collection, Map object, {Object metadata}) =>
-    connector.subscribe('$prefix:insert', [collection, object], { 'metadata': metadata == null ? _config : metadata }).first;
+    connector.call('$prefix:insert', args: [collection, object], kwargs: { 'metadata': (metadata == null) ? _config : metadata });
 
   Future update(String collection, Map object, {Object metadata}) =>
-    connector.subscribe('$prefix:update', [collection, object], { 'metadata': metadata == null ? _config : metadata }).first;
+    connector.call('$prefix:update', args: [collection, object], kwargs: { 'metadata': (metadata == null) ? _config : metadata });
 
   Future<bool> delete(String collection, Map object, {Object metadata}) =>
-    connector.subscribe('$prefix:delete', [collection, object], { 'metadata': metadata == null ? _config : metadata }).first;
+    connector.call('$prefix:delete', args: [collection, object], kwargs: { 'metadata': (metadata == null) ? _config : metadata });
 }

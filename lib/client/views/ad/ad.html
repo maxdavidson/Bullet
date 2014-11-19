@@ -1,16 +1,11 @@
-<div ng-switch="ctrl.isLoading">
+<div ng-switch="isLoading">
   <loader class="fade" ng-switch-when="true"></loader>
 
   <div class="ad-view fade" ng-switch-when="false">
 
-    <h2>{{ ctrl.ad.title }}</h2>
-    <h3>{{ ctrl.ad.price | currency : ' kr' : false }}</h3>
-    <p><em>{{ ctrl.ad.description }}</em></p>
-
-    <!--
-    <h4>User</h4>
-    <p><a push-href="/profile/{{ ctrl.user.id }}">{{ ctrl.user.userName }}</a></p>
-    -->
+    <h2>{{ ad.title }}</h2>
+    <h3>{{ ad.price | currency : ' kr' : false }}</h3>
+    <p><em>{{ ad.description }}</em></p>
 
   </div>
 </div>

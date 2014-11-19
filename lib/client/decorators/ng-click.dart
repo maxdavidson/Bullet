@@ -1,4 +1,11 @@
-part of bullet.client.decorators;
+library bullet.client.decorators.ng_click;
+
+import 'dart:async';
+import 'dart:html' as DOM;
+import 'dart:math' as Math;
+
+import 'package:angular/angular.dart';
+
 
 /**
  * Port of ngTouch's version of ngClick to trigger click events using touch events,
@@ -114,7 +121,7 @@ class NgClick {
   /**
    * Global click handler that prevents the click if it's in a bustable zone and preventGhostClick was called recently.
    */
-  void handleClick(DOM.MouseEvent event) {
+  handleClick(DOM.MouseEvent event) {
     if (new DateTime.now().compareTo(lastPreventedTime.subtract(PREVENT_DURATION)) > 0)
       return; // Too old.
 
@@ -159,7 +166,7 @@ class NgClick {
    * Global touchstart handler that creates an allowable region for a click event.
    * This allowable region can be removed by preventGhostClick if we want to bust it.
    */
-  void handleTouchStart(DOM.TouchEvent event) {
+  handleTouchStart(DOM.TouchEvent event) {
     DOM.Point touchPoint = event.touches.first.client;
     touchCoordinates.add(touchPoint);
     new Future.delayed(PREVENT_DURATION, () => touchCoordinates.remove(touchPoint));
@@ -169,7 +176,7 @@ class NgClick {
    * On the first call, attaches some event handlers. Then whenever it gets called, it creates a
    * zone around the touchstart where clicks will get busted.
    */
-  void preventGhostClick(DOM.Point click) {
+  preventGhostClick(DOM.Point click) {
     if (touchCoordinates != null) {
       DOM.querySelector('html')
         ..onClick.listen(handleClick)

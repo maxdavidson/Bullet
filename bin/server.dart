@@ -1,13 +1,16 @@
+library bullet.server;
+
 import 'dart:io';
 import 'dart:async';
 
 import 'package:stream/stream.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
+import 'package:connector/connector.dart';
+import 'package:connector/bus.dart';
+
 import 'package:bullet/shared/helpers.dart';
 import 'package:bullet/shared/authenticator/authenticator.dart';
-import 'package:bullet/shared/connector/connector.dart';
-import 'package:bullet/shared/connector/impl/websocket/server.dart';
 
 import 'package:bullet/server/database/impl/mongodb.dart';
 import 'package:bullet/server/database/server.dart';
@@ -22,7 +25,6 @@ const HOME = '../web';
 final Database database = new MongoDb(new Db('mongodb://127.0.0.1/bullet'));
 
 final userState = new Map<String, Future<Map>>();
-
 
 /**
  * A helper function to find or otherwise create a user
@@ -59,21 +61,21 @@ Future<Map> findOrCreateUser(Authenticator auth) {
 /**
  * A [Permission] object that only allows access if user is logged in
  */
-Permission authenticateAsUser = new AuthenticatePermission(
+final Permission authenticateAsUser = new AuthenticatePermission(
   onAuthenticate: (Authenticator auth, Map request) =>
     findOrCreateUser(auth).then((_) => true));
 
 /**
  * A [Permission] object that only allows access if a user is logged in and owns the ad
  */
-Permission authenticateAsUserWhoOwnsAd = new AuthenticatePermission(
+final Permission authenticateAsUserWhoOwnsAd = new AuthenticatePermission(
   onAuthenticate: (Authenticator auth, Map request) =>
     findOrCreateUser(auth).then((Map user) => user['ads'].contains(request['_id'])));
 
 /**
  * The set of permissions for the database
  */
-Map<String, DatabasePermissions> permissions = {
+final Map<String, DatabasePermissions> permissions = {
     'ads': new DatabasePermissions(
         read:   Permission.ALLOW,
         create: authenticateAsUser,
@@ -89,12 +91,12 @@ Map<String, DatabasePermissions> permissions = {
 /**
  * The decorated database
  */
-Database wrappedDatabase = new PermissionsDecorator(new UpdateDecorator(database), permissions: permissions);
+final Database wrappedDatabase = new PermissionsDecorator(new UpdateDecorator(database), permissions: permissions);
 
 /**
  * Hooks for the API
  */
-var API = <String, Function> {
+final API = <String, Function> {
     'db:find':   wrappedDatabase.find,
     'db:insert': wrappedDatabase.insert,
     'db:update': wrappedDatabase.update,
@@ -104,16 +106,17 @@ var API = <String, Function> {
 /**
  * Create the connector instance
  */
-ConnectorServer<WebSocket> connector = new WebSocketConnectorServer();
+Future createConnector(WebSocket ws) {
+  final adapter = new BusAdapter(ws, ws);
+  final connector = new Connector.fromStringBus(adapter);
 
+  API.forEach(connector.on);
+  print('Connected to ${ws.hashCode}');
 
+  return connector.onClose.then(sideEffect((_) => print('Disconnected from ${ws.hashCode}')));
+}
 
-void main(List<String> args) {
-
-  /**
-   * Bind API hooks to the connector
-   */
-  API.forEach(connector.bind);
+main(List<String> args) {
 
   /**
    * Create the web server
@@ -125,9 +128,12 @@ void main(List<String> args) {
    * redirecting all but specific requests to index.html
    */
   server
-    ..map('ws:/api', connector.add)
+    ..map('ws:/api', createConnector)
     ..map(r'/.*(html|png|js|dart|gif|jpg|jpeg|ttf|woff|css|less|svg)$',
       (HttpConnect connect) => server.resourceLoader.load(connect, connect.request.uri.path))
-    ..map('/.+', (HttpConnect connect) => connect.include('/'))
+    ..map('/.+', (HttpConnect connect) {
+      connect.redirect('/#${connect.request.uri}');
+      //connect.include('/');
+    })
     ..start(address: InternetAddress.ANY_IP_V4, port: 8888);
 }

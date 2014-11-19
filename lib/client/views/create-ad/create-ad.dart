@@ -1,12 +1,15 @@
-part of bullet.client.views;
+library bullet.client.views.create_ad;
+
+import 'package:angular/angular.dart';
+
+import 'package:bullet/shared/helpers.dart';
+import 'package:bullet/client/services/database/entities.dart';
+
 
 @Component(
   selector: 'create-ad-view',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/views/create-ad/create-ad.html',
-  cssUrl: const [
-      '/packages/bullet/client/views/create-ad/create-ad.css',
-      '/packages/bullet/client/views/views.css'])
+  templateUrl: 'create-ad.html',
+  cssUrl: const ['create-ad.css', '../views.css'])
 class CreateAdView {
 
   final Router router;
@@ -19,7 +22,7 @@ class CreateAdView {
 
   CreateAdView(EntityMapper<Ad> ads, EntityMapper<User> users, this.router) {
     ad = ads.create();
-    users.get('me').then((User me) => user = me);
+    users.get('me').then((me) => user = me);
   }
 
   // TODO: validate state before saving

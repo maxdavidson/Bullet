@@ -1,12 +1,19 @@
-part of bullet.client.views;
+library bullet.client.views.login;
+
+import 'dart:async';
+
+import 'package:angular/angular.dart';
+
+import 'package:bullet/client/services/database/entities.dart';
+import 'package:bullet/client/services/authenticator/client.dart';
+import 'package:bullet/client/services/authenticator/impl/google.dart';
+import 'package:bullet/client/services/authenticator/impl/facebook.dart';
+
 
 @Component(
     selector: 'login-view',
-    publishAs: 'ctrl',
-    templateUrl: '/packages/bullet/client/views/login/login.html',
-    cssUrl: const [
-        '/packages/bullet/client/views/login/login.css',
-        '/packages/bullet/client/views/views.css'])
+    templateUrl: 'login.html',
+    cssUrl: const ['login.css', '../views.css'])
 class LoginView {
 
   static final ClientAuthenticator _FB = new FacebookClientAuthenticator();

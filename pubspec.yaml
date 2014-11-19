@@ -1,21 +1,19 @@
 name: bullet
-version: 0.8.0
+version: 0.9.0
 dependencies:
   browser: any
-  angular: '>= 0.12.0'
+  angular: 1.0.0
+  web_components: any
+  connector:
+    git: git://github.com/maxdavidson/connector.git
   stream: any
   mongo_dart: any
   oauth2: any
-  stream_ext: any
-  ng_infinite_scroll: any
   jwt: any
   quiver: any
   intl: any
 dev_dependencies:
   unittest: any
-dependency_overrides:
-  angular: '>= 0.12.0'
-    #path: '../angular.dart/'
 transformers:
 - angular:
     html_files:

@@ -67,13 +67,18 @@ class UserMapper extends EntityMapper<User> {
   }
 }
 
+// Hack to inject generic versions. Simply bind(EntityMapper<Ad>, ...) is illegal syntax...
+class TypeHelper<T> {
+  const TypeHelper();
+  get type => T;
+}
+
 class EntityModule extends Module {
   EntityModule() {
     bind(AdMapper);
     bind(UserMapper);
-    
-    // Hack to inject generic versions. Simply bind(EntityMapper<Ad>, ...) is illegal syntax...
-    bind((new EntityMapper<Ad>(null, null)).runtimeType, toImplementation: AdMapper);
-    bind((new EntityMapper<User>(null, null)).runtimeType, toImplementation: UserMapper);
+
+    bind(const TypeHelper<EntityMapper<Ad>>().type, toImplementation: AdMapper);
+    bind(const TypeHelper<EntityMapper<User>>().type, toImplementation: UserMapper);
   }
 }

@@ -1,12 +1,14 @@
-part of bullet.client.views;
+library bullet.client.views.ad;
+
+import 'package:angular/angular.dart';
+
+import 'package:bullet/client/services/database/entities.dart';
+
 
 @Component(
   selector: 'ad-view',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/views/ad/ad.html',
-  cssUrl: const [
-    '/packages/bullet/client/views/ad/ad.css',
-    '/packages/bullet/client/views/views.css'])
+  templateUrl: 'ad.html',
+  cssUrl: const ['ad.css', '../views.css'])
 class AdView {
   Ad ad;
 
@@ -15,6 +17,6 @@ class AdView {
   AdView(EntityMapper<Ad> ads, RouteProvider rp, Router router) {
     ads.get(rp.parameters['adId'])
       .then((Ad result) => ad = result)
-      .catchError((e) => router.go('default', {}));
+      .catchError((e) => router.go('default', const {}));
   }
 }

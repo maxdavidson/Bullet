@@ -1,4 +1,7 @@
-part of bullet.client.decorators;
+library bullet.client.decorators.push_href;
+
+import 'dart:html' as DOM;
+import 'package:angular/angular.dart';
 
 @Decorator(
     selector: 'a[push-href]',

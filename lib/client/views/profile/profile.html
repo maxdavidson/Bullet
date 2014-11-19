@@ -1,49 +1,39 @@
-<loader class="fade" ng-if="ctrl.isLoading"></loader>
+<loader class="fade" ng-if="isLoading"></loader>
 
-<div class="login-view fade" ng-if="ctrl.user != null">
+<div class="login-view fade" ng-if="user != null">
 
-  <h2>{{ ctrl.user.name }}</h2>
-  <h5>User ID: {{ ctrl.user.id }}</h5>
+  <h2>{{ user.name }}</h2>
+  <h5>User ID: {{ user.id }}</h5>
 
   <h3>Queries</h3>
   <div class="queries">
     <ul>
-      <li ng-repeat="query in ctrl.user.queries">
-        <a class="query"  push-href="/search/{{ ctrl.getUri(query) }}">{{ query.query }}</a>
+      <li ng-repeat="query in user.queries">
+        <a class="query"  push-href="/search/{{ getUri(query) }}">{{ query.query }}</a>
       </li>
-      <em ng-if="ctrl.user.queries.isEmpty">No queries</em>
+      <em ng-if="user.queries.isEmpty">No queries</em>
     </ul>
   </div>
 
   <h3>Ads</h3>
   <div class="ads">
     <ul>
-      <li ng-repeat="ad in ctrl.user.ads">
+      <li ng-repeat="ad in user.ads">
         <a class="ad" push-href="/ad/{{ ad }}">{{ ad }}</a>
       </li>
-      <em ng-if="ctrl.user.ads.isEmpty">No ads</em>
+      <em ng-if="user.ads.isEmpty">No ads</em>
     </ul>
   </div>
 
   <h3>Color</h3>
   <div class="colors">
     <div class="color"
-         ng-repeat="color in ctrl.colors"
+         ng-repeat="color in colors"
          ng-style="{ 'background-color': color }"
-         ng-click="ctrl.setColor(color)"></div>
+         ng-click="setColor(color)"></div>
   </div>
-
-  <!--
-  <h3>Accounts</h3>
-  <div class="accounts">
-    <div class="account" ng-repeat="account in ctrl.user.accounts">
-      <div class="logo">{{ account.type }}</div>
-      <div class="deauth">Deauthenticate</div>
-    </div>
-  </div>
-  -->
 
   <h3></h3>
-  <a href="" ng-click="ctrl.provider.auth.logout()">Logout</a>
+  <a href="" ng-click="provider.auth.logout()">Logout</a>
 
 </div>

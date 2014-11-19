@@ -1,10 +1,12 @@
-part of bullet.client.components;
+library bullet.client.components.loader;
+
+import 'package:angular/angular.dart';
+
 
 @Component(
   selector: 'loader',
-  publishAs: 'ctrl',
-  templateUrl: '/packages/bullet/client/components/loader/loader.html',
-  cssUrl: '/packages/bullet/client/components/loader/loader.css',
+  templateUrl: 'loader.html',
+  cssUrl: 'loader.css',
   map: const { 'size': '=>size' })
 class LoaderComponent {
   String _size = '1em';

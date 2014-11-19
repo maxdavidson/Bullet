@@ -24,8 +24,8 @@ abstract class ServerAuthenticator extends Authenticator {
 
   static final _instances = new Map<String, ServerAuthenticator>();
 
-  const ServerAuthenticator();
-  const ServerAuthenticator.fromConfig(Map config);
+  ServerAuthenticator();
+  ServerAuthenticator.fromConfig(Map config);
 
   factory ServerAuthenticator.fromJson(Map json) {
     String type = json['type'];

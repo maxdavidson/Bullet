@@ -1,4 +1,4 @@
-<div ng-switch="ctrl.isLoading">
+<div ng-switch="isLoading">
   <loader class="fade" ng-switch-when="true"></loader>
 
   <div class="login-view fade" ng-switch-when="false">
@@ -7,11 +7,11 @@
     <p>Login using one of the methods below. Bullet will never post anything in your behalf.</p>
 
     <div class="logins">
-      <div class="login" ng-class="{ disabled: !ctrl.FB.isInitialized }" ng-click="ctrl.fbLogin()">
+      <div class="login" ng-class="{ disabled: !FB.isInitialized }" ng-click="fbLogin()">
         <div class="image"><img src="/packages/bullet/client/views/login/facebook.svg"></div>
         <div class="description">Facebook </div>
       </div>
-      <div class="login" ng-class="{ disabled: !ctrl.GOO.isInitialized }" ng-click="ctrl.gooLogin()">
+      <div class="login" ng-class="{ disabled: !GOO.isInitialized }" ng-click="gooLogin()">
         <div class="image"><img src="/packages/bullet/client/views/login/google.svg"></div>
         <div class="description">Google+</div>
       </div>
